@@ -5,7 +5,10 @@ module Esse
     class Configuration
       def faktory
         @faktory ||= begin
-          require_relative "jobs/faktory_index_job"
+          require_relative "workers/faktory"
+          Esse::AsyncIndexing::Workers::Faktory::DEFAULT.each_key do |path|
+            require path
+          end
           Configuration::Faktory.new
         end
         if block_given?
@@ -17,7 +20,10 @@ module Esse
 
       def sidekiq
         @sidekiq ||= begin
-          require_relative "jobs/sidekiq_index_job"
+          require_relative "workers/sidekiq"
+          Esse::AsyncIndexing::Workers::Sidekiq::DEFAULT.each_key do |path|
+            require path
+          end
           Configuration::Sidekiq.new
         end
         if block_given?

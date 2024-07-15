@@ -11,7 +11,19 @@ RSpec.describe Esse::AsyncIndexing::Configuration::Faktory do
     it "normalizes the workers" do
       config = described_class.new
       config.workers = {"foo" => {"queue" => "bar"}}
-      expect(config.workers).to eq("foo" => {queue: "bar"})
+      expect(config.workers["foo"]).to eq(queue: "bar")
+    end
+
+    it "does not remove the default workers" do
+      config = described_class.new
+      config.workers = {"foo" => {"queue" => "bar"}}
+      expect(config.workers).to have_key("Esse::AsyncIndexing::Jobs::FaktoryIndexJob")
+    end
+
+    it "overwrites the default workers options" do
+      config = described_class.new
+      config.workers = {"Esse::AsyncIndexing::Jobs::FaktoryIndexJob" => {"queue" => "bar"}}
+      expect(config.workers["Esse::AsyncIndexing::Jobs::FaktoryIndexJob"]).to eq(queue: "bar")
     end
   end
 end

@@ -5,6 +5,10 @@ require_relative "shared_class_methods"
 module Esse::AsyncIndexing
   module Workers
     module Sidekiq
+      DEFAULT = {
+        "esse/async_indexing/jobs/sidekiq_index_job" => "Esse::AsyncIndexing::Jobs::SidekiqIndexJob"
+      }
+
       def self.extended(base)
         base.include(::Sidekiq::Worker) if defined?(::Sidekiq)
         base.extend SharedClassMethods
