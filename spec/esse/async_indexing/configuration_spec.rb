@@ -26,4 +26,24 @@ RSpec.describe Esse::AsyncIndexing::Configuration do
       end
     end
   end
+
+  describe "#services" do
+    let(:instance) { described_class.new }
+
+    it "returns an instance of Esse::AsyncIndexing::ConfigService" do
+      expect(instance.services).to be_a(Esse::AsyncIndexing::ConfigService)
+    end
+
+    it "returns true for sidekiq? if sidekiq is configured" do
+      expect(instance.services.sidekiq?).to be(false)
+      instance.sidekiq
+      expect(instance.services.sidekiq?).to be(true)
+    end
+
+    it "returns true for faktory? if faktory is configured" do
+      expect(instance.services.faktory?).to be(false)
+      instance.faktory
+      expect(instance.services.faktory?).to be(true)
+    end
+  end
 end

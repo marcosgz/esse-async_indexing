@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "esse"
-# require "faktory_worker_ruby"
 require "esse-redis_storage"
 require "forwardable"
 require "securerandom"
@@ -47,6 +46,7 @@ require_relative "async_indexing/actions/batch_import_all"
 require_relative "async_indexing/adapters/adapter"
 require_relative "async_indexing/adapters/sidekiq"
 require_relative "async_indexing/adapters/faktory"
+require_relative "plugins/async_indexing"
 
 module Esse::AsyncIndexing
   SERVICES = {
@@ -67,6 +67,15 @@ module Esse::AsyncIndexing
   def self.jid
     SecureRandom.hex(12)
   end
+
+  def self.async_indexing_repo?(repo)
+    return false unless repo.is_a?(Class) && repo < Esse::Repository
+
+    repo.respond_to?(:implement_batch_ids?) && repo.implement_batch_ids?
+  end
 end
 
 Esse::Config.__send__ :include, Esse::AsyncIndexing::Config
+if defined?(Esse::CLI)
+  require_relative "async_indexing/cli"
+end

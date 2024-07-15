@@ -58,7 +58,7 @@ class Esse::AsyncIndexing::Configuration::Base
 
     hash = {}
     value.each do |class_name, opts|
-      hash[class_name.to_s] = MultiJson.load(MultiJson.dump(opts), symbolize_names: true)
+      hash[class_name.to_s] = Esse::HashUtils.deep_transform_keys(opts.to_h, &:to_sym)
     end
     hash
   end
