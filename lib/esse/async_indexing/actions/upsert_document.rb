@@ -6,7 +6,7 @@ class Esse::AsyncIndexing::Actions::UpsertDocument
 
   def self.call(index_class_name, repo_name, document_id, operation = "index", options = {})
     unless OPERATIONS.include?(operation)
-      raise ArgumentError, "operation must be one of #{OPERATIONS.join(', ')}"
+      raise ArgumentError, "operation must be one of #{OPERATIONS.join(", ")}"
     end
 
     index_class = Object.const_get(index_class_name)

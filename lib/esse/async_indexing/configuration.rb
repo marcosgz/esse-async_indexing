@@ -4,7 +4,10 @@ module Esse
   module AsyncIndexing
     class Configuration
       def faktory
-        @faktory ||= Configuration::Faktory.new
+        @faktory ||= begin
+          require_relative "jobs/faktory_index_job"
+          Configuration::Faktory.new
+        end
         if block_given?
           yield @faktory
         else
@@ -13,7 +16,10 @@ module Esse
       end
 
       def sidekiq
-        @sidekiq ||= Configuration::Sidekiq.new
+        @sidekiq ||= begin
+          require_relative "jobs/sidekiq_index_job"
+          Configuration::Sidekiq.new
+        end
         if block_given?
           yield @sidekiq
         else
