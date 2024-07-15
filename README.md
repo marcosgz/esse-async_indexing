@@ -8,7 +8,7 @@ This gem provides a way to [Esse](https://github.com/marcosgz/esse) index docume
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'esse-async-indexing'
+gem 'esse-async_indexing'
 ```
 
 And then execute:
@@ -33,7 +33,7 @@ To install this gem onto your local machine, run `bundle exec rake install`. To 
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/marcosgz/esse-async-indexing.
+Bug reports and pull requests are welcome on GitHub at https://github.com/marcosgz/esse-async_indexing.
 
 ## License
 
