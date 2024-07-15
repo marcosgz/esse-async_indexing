@@ -1,0 +1,41 @@
+name: Build and Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      async-indexing:
+        image: contribsys/async-indexing:latest
+        ports:
+          - "7419:7419"
+          - "7420:7420"
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+    strategy:
+      matrix:
+        ruby-version:
+          - '2.7'
+          - '3.0'
+          - '3.1'
+          - '3.2'
+        gemfile:
+          - 'Gemfile'
+    env:
+      BUNDLE_GEMFILE: ${{ github.workspace }}/${{ matrix.gemfile }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up using Ruby ${{ matrix.ruby-version }} with Gemfile '${{ matrix.gemfile }}'
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby-version }}
+          bundler-cache: true
+      - name: Run tests
+        run: bundle exec rspec

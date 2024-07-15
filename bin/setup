@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+IFS=$'\n\t'
+set -vx
+
+bundle install
+find ci -type f \( -iname "Gemfile.*" ! -iname "*.lock" \) -exec bundle install --gemfile {} \;
