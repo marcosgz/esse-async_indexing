@@ -6,5 +6,6 @@ gem "esse"
 gem "esse-rspec"
 gem "timecop"
 gem "faktory_worker_ruby", require: false
+gem "opensearch-ruby", require: false
 
 gemspec

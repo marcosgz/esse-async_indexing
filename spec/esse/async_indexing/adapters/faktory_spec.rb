@@ -3,7 +3,6 @@
 require "spec_helper"
 require "faktory"
 
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe Esse::AsyncIndexing::Adapters::Faktory, freeze_at: [2020, 7, 2, 12, 30, 50] do
   let(:worker_class) { "DummyFaktoryWorker" }
   let(:worker_args) { ["User", 1] }
@@ -233,4 +232,3 @@ RSpec.describe Esse::AsyncIndexing::Adapters::Faktory, freeze_at: [2020, 7, 2, 1
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers

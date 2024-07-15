@@ -2,9 +2,11 @@
 
 require "bundler/setup"
 require "pry"
+require "opensearch-ruby"
 require "esse/rspec"
 require "esse/async_indexing"
 require "support/hooks/timecop"
+require "support/webmock"
 
 MINUTE_IN_SECONDS = 60
 HOUR_IN_SECONDS = MINUTE_IN_SECONDS * 60
@@ -21,5 +23,22 @@ RSpec.configure do |config|
 
   def reset_config!
     Esse.instance_variable_set(:@config, nil)
+  end
+
+  def setup_esse_client!
+    Esse.configure do |config|
+      config.cluster do |cluster|
+        cluster.client = opensearch_client
+      end
+    end
+  end
+
+  def opensearch_client
+    OpenSearch::Client.new.tap do |client|
+      client.instance_variable_set(:@verified, true)
+      client.define_singleton_method(:info) do
+        {"version" => {"number" => "7.8.0", "distribution" => "opensearch"}}
+      end
+    end
   end
 end

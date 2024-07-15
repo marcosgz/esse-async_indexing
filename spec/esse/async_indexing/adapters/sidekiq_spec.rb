@@ -2,7 +2,6 @@
 
 require "spec_helper"
 
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe Esse::AsyncIndexing::Adapters::Sidekiq do
   let(:worker_class) { "DummyWorker" }
   let(:worker_args) { ["User", 1] }
@@ -243,5 +242,3 @@ RSpec.describe Esse::AsyncIndexing::Adapters::Sidekiq do
     end
   end
 end
-
-# rubocop:enable RSpec/MultipleMemoizedHelpers

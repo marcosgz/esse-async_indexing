@@ -13,6 +13,12 @@ module Esse
     module Adapters
     end
 
+    module Actions
+    end
+
+    module Jobs
+    end
+
     module Workers
       def self.for(service, **options)
         require_relative "async_indexing/workers/#{service}"
@@ -35,6 +41,7 @@ require_relative "async_indexing/version"
 require_relative "async_indexing/config"
 require_relative "async_indexing/errors"
 require_relative "async_indexing/worker"
+require_relative "async_indexing/actions/upsert_document"
 require_relative "async_indexing/adapters/adapter"
 require_relative "async_indexing/adapters/sidekiq"
 require_relative "async_indexing/adapters/faktory"
