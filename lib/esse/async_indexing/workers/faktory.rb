@@ -6,7 +6,8 @@ module Esse::AsyncIndexing
   module Workers
     module Faktory
       DEFAULT = {
-        "esse/async_indexing/jobs/faktory_index_job" => "Esse::AsyncIndexing::Jobs::FaktoryIndexJob"
+        "esse/async_indexing/jobs/faktory_index_job" => "Esse::AsyncIndexing::Jobs::FaktoryIndexJob",
+        "esse/async_indexing/jobs/faktory_batch_import_all" => "Esse::AsyncIndexing::Jobs::FaktoryBatchImportAll"
       }
 
       def self.extended(base)

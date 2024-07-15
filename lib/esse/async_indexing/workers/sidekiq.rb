@@ -6,7 +6,8 @@ module Esse::AsyncIndexing
   module Workers
     module Sidekiq
       DEFAULT = {
-        "esse/async_indexing/jobs/sidekiq_index_job" => "Esse::AsyncIndexing::Jobs::SidekiqIndexJob"
+        "esse/async_indexing/jobs/sidekiq_index_job" => "Esse::AsyncIndexing::Jobs::SidekiqIndexJob",
+        "esse/async_indexing/jobs/sidekiq_batch_import_all" => "Esse::AsyncIndexing::Jobs::SidekiqBatchImportAll"
       }
 
       def self.extended(base)
