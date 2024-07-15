@@ -23,7 +23,7 @@ RSpec.shared_context "with venues index definition" do
         collection do |**context, &block|
           filtered = ds
           if context.key?(:id)
-            filtered = ds.select { |venue| venue[:id] == context[:id] }
+            filtered = ds.select { |venue| Array(context[:id]).map(&:to_s).include? venue[:id].to_s }
           end
           block.call(filtered, **context) unless filtered.empty?
         end
