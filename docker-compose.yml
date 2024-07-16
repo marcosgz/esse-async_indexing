@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis
+    command: redis-server
+    ports:
+      - 6379:6379
+  faktory:
+    image: contribsys/faktory
+    ports:
+      - 7419:7419
+      - 7420:7420
