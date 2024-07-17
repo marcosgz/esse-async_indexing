@@ -43,7 +43,7 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
 
     context "when passing an index that does not support async indexing" do
       before do
-        collection_class =index_collection_class
+        collection_class = index_collection_class
         stub_esse_index(:counties) do
           repository :county do
             collection collection_class
@@ -73,6 +73,7 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import CitiesIndex --service=faktory])
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job.on(:sidekiq)
       end
 
       it "detects faktory as the default service name when not passed and is set in the configuration" do
@@ -80,6 +81,80 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import CitiesIndex])
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job.on(:sidekiq)
+      end
+
+      it "enqueues the faktory job for the given index when passing --service=sidekiq" do
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --service=sidekiq])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:sidekiq)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job.on(:faktory)
+      end
+
+      it "detects sidekiq as the default service name when not passed and is set in the configuration" do
+        Esse.config.async_indexing.sidekiq
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:sidekiq)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job.on(:faktory)
+      end
+    end
+
+    context "when passing a index with multiple repositories that support async indexing", :async_indexing_job do
+      before do
+        collection_class = index_collection_class
+        stub_esse_index(:geos) do
+          plugin :async_indexing
+          repository :country do
+            collection collection_class
+          end
+          repository :city do
+            collection collection_class
+          end
+        end
+      end
+
+      it "enqueues the faktory job for the given index when passing --service=faktory" do
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import GeosIndex --service=faktory])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "country", "batch_id", {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "batch_id", {}).on(:faktory)
+      end
+
+      it "enqueues the faktory job for the given index when passing --service=sidekiq" do
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import GeosIndex --service=sidekiq])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "country", "batch_id", {}).on(:sidekiq)
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "batch_id", {}).on(:sidekiq)
+      end
+    end
+
+    context "when passing a index with a custom indexing job defined", :async_indexing_job do
+      before do
+        collection_class = index_collection_class
+        stub_esse_index(:geos) do
+          plugin :async_indexing
+          repository :country do
+            collection collection_class
+            async_indexing_job(:import) do |repo, op, ids, **options|
+              Thread.current[:custom_job] = [repo, op, ids, options]
+            end
+          end
+        end
+      end
+
+      it "enqueues the custom job for the given index when passing --service=faktory" do
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import GeosIndex --service=faktory])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job
+        expect(Thread.current[:custom_job]).to eq([GeosIndex::Country, :import, [1, 2, 3], {}])
+      end
+
+      it "enqueues the custom job for the given index when passing --service=sidekiq" do
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import GeosIndex --service=sidekiq])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job
+        expect(Thread.current[:custom_job]).to eq([GeosIndex::Country, :import, [1, 2, 3], {}])
       end
     end
   end
