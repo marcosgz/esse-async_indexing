@@ -6,6 +6,7 @@ require "opensearch-ruby"
 require "esse/rspec"
 require "esse/async_indexing"
 require "support/hooks/timecop"
+require "support/hooks/have_enqueued_faktory_job"
 require "support/webmock"
 
 MINUTE_IN_SECONDS = 60

@@ -20,13 +20,13 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
         end
 
         enqueuer = if (caller = repo.async_indexing_jobs[:import])
-          ->(ids) { caller.call(repo, :import, ids, **options) }
+          ->(ids) { caller.call(repo, :import, ids, **bulk_options) }
         else
           queue = Esse::RedisStorage::Queue.for(repo: repo)
           ->(ids) do
             batch_id = queue.enqueue(values: ids)
-            Esse::AsyncIndexing.worker(WORKER_NAME)
-              .with_args(repo.index.name, repo.name, batch_id, options)
+            Esse::AsyncIndexing.worker(WORKER_NAME, adapter: service_name)
+              .with_args(repo.index.name, repo.repo_name, batch_id, bulk_options)
               .push(to: service_name)
           end
         end
@@ -38,8 +38,12 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
 
   private
 
-  def options
-    @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:repo, :service])
+  def bulk_options
+    @bulk_options ||= begin
+      hash = @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:repo, :service])
+      hash.delete(:context) if hash[:context].nil? || hash[:context].empty?
+      hash
+    end
   end
 
   def validate_options!
@@ -47,6 +51,6 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
   end
 
   def service_name
-    @options[:service] || Esse.config.async_indexing.services.first
+    (@options[:service] || Esse.config.async_indexing.services.first).to_sym
   end
 end

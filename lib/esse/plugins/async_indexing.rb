@@ -40,14 +40,15 @@ module Esse
         def async_indexing_job(*operations, &block)
           operations = AsyncIndexingJobValidator::OPERATIONS if operations.empty?
           AsyncIndexingJobValidator.call(operations, block)
-          @async_indexing_jobs ||= {}
           hash = operations.each_with_object({}) { |operation, h| h[operation] = block }
-          @async_indexing_jobs = @async_indexing_jobs.dup.merge(hash)
+          @async_indexing_jobs = async_indexing_jobs.dup.merge(hash)
         ensure
           @async_indexing_jobs.freeze
         end
 
-        attr_reader :async_indexing_jobs
+        def async_indexing_jobs
+          @async_indexing_jobs || {}.freeze
+        end
 
         class AsyncIndexingJobValidator
           OPERATIONS = %i[import index update delete].freeze
