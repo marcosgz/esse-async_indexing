@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Esse::Plugins::AsyncIndexing, "#implement_batch_ids?" do
+RSpec.describe Esse::Plugins::AsyncIndexing, "#implement_batch_ids?" do # rubocop:disable RSpec/SpecFilePathFormat
   it "returns false when the collection_proc is nil" do
     stub_esse_index(:geos) do
       plugin :async_indexing

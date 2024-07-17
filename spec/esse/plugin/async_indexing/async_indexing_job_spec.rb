@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do
+RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:disable RSpec/SpecFilePathFormat
   it "sets custom async indexing job caller for the all operations" do
     stub_esse_index(:geos) do
       plugin :async_indexing

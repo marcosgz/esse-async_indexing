@@ -72,9 +72,7 @@ module Esse::AsyncIndexing
 
       @payload["created_at"] ||= Time.now.to_f
       worker_to_push = with_job_jid
-      # Esse::AsyncIndexing.config.middleware.invoke(worker_to_push, to) do
       Esse::AsyncIndexing::SERVICES[to].push(worker_to_push)
-      # end
     end
 
     def eql?(other)

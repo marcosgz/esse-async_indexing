@@ -5,7 +5,25 @@ require_relative "worker"
 module Esse
   module AsyncIndexing
     module Workers
-      DEFAULT = {}
+      DEFAULT = {
+        "esse/async_indexing/jobs/import_all_job" => "Esse::AsyncIndexing::Jobs::ImportAllJob",
+        "esse/async_indexing/jobs/import_batch_id_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob",
+        "esse/async_indexing/jobs/upsert_document_id_job" => "Esse::AsyncIndexing::Jobs::UpsertDocumentIdJob"
+      }
+
+      # The backend service may live in a different application, so they are not required by default.
+      # That's why we have a separate structure to let enqueue jobs even without having the explicit worker class loaded.
+      # This method will require all the internal jobs and configure them according to the defined options.
+      def self.install!(service, **options)
+        return if @installed_services&.include?(service.to_sym)
+
+        DEFAULT.each do |job, worker_name|
+          Kernel.require(job)
+          worker = Esse::AsyncIndexing::Jobs.const_get(worker_name.split("::").last)
+          worker.extend(self.for(service, **options))
+        end
+        @installed_services = Array(@installed_services) << service.to_sym
+      end
 
       def self.for(service, **options)
         require_relative "workers/#{service}"

@@ -17,13 +17,13 @@ RSpec.describe Esse::AsyncIndexing::Configuration::Sidekiq do
     it "does not remove the default workers" do
       config = described_class.new
       config.workers = {"foo" => {"queue" => "bar"}}
-      expect(config.workers).to have_key("Esse::AsyncIndexing::Jobs::SidekiqIndexJob")
+      expect(config.workers).to have_key("Esse::AsyncIndexing::Jobs::ImportBatchIdJob")
     end
 
     it "overwrites the default workers options" do
       config = described_class.new
-      config.workers = {"Esse::AsyncIndexing::Jobs::SidekiqIndexJob" => {"queue" => "bar"}}
-      expect(config.workers["Esse::AsyncIndexing::Jobs::SidekiqIndexJob"]).to eq(queue: "bar")
+      config.workers = {"Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => {"queue" => "bar"}}
+      expect(config.workers["Esse::AsyncIndexing::Jobs::ImportBatchIdJob"]).to eq(queue: "bar")
     end
   end
 

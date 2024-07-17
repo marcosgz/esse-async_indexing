@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
 require "spec_helper"
-require "esse/async_indexing/jobs/upsert_doc_id_job"
+require "esse/async_indexing/jobs/upsert_document_id_job"
 
-RSpec.describe Esse::AsyncIndexing::Jobs::UpsertDocIdJob do
+RSpec.describe Esse::AsyncIndexing::Jobs::UpsertDocumentIdJob do
   before do
     Esse.config.async_indexing.sidekiq # It will require sidekiq jobs
   end
