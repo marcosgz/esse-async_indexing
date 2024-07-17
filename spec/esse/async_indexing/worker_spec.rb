@@ -146,8 +146,9 @@ RSpec.describe Esse::AsyncIndexing::Worker do
 
     specify do
       expect(worker.payload).to eq({})
-      expect { worker.push(to: :invalid) }.to raise_error(
-        Esse::AsyncIndexing::Error, "Service :invalid is not implemented. Please use one of [:sidekiq, :faktory]"
+      worker.instance_variable_set(:@service, :invalid)
+      expect { worker.push }.to raise_error(
+        Esse::AsyncIndexing::Error, /Service :invalid is not implemented. Please use one of :sidekiq or :faktory/
       )
       expect(worker.payload).to eq({})
     end
@@ -156,7 +157,8 @@ RSpec.describe Esse::AsyncIndexing::Worker do
       specify do
         allow(Esse::AsyncIndexing).to receive(:jid).and_return("123xyz")
         allow(Esse::AsyncIndexing::Adapters::Faktory).to receive(:push).with(worker).and_return("ok")
-        expect(worker.push(to: :faktory)).to eq("ok")
+        worker.instance_variable_set(:@service, :faktory)
+        expect(worker.push).to eq("ok")
         expect(worker.payload).to eq("jid" => "123xyz", "created_at" => now.to_f)
       end
 
@@ -171,7 +173,8 @@ RSpec.describe Esse::AsyncIndexing::Worker do
       specify do
         allow(Esse::AsyncIndexing).to receive(:jid).and_return("123xyz")
         allow(Esse::AsyncIndexing::Adapters::Sidekiq).to receive(:push).with(worker).and_return("ok")
-        expect(worker.push(to: :sidekiq)).to eq("ok")
+        worker.instance_variable_set(:@service, :sidekiq)
+        expect(worker.push).to eq("ok")
         expect(worker.payload).to eq("jid" => "123xyz", "created_at" => now.to_f)
       end
 

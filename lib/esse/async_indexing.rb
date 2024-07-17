@@ -37,11 +37,13 @@ module Esse::AsyncIndexing
   # @param worker_class [String] The worker class name
   # @param options [Hash] Options that will be passed along to the worker instance
   # @return [Esse::AsyncIndexing::Worker] An instance of worker
-  def self.worker(worker_class, adapter:, **options)
-    if adapter.nil? || SERVICES[adapter.to_sym].nil?
-      raise ArgumentError, "Invalid adapter: #{adapter.inspect}, valid adapters are: #{SERVICES.keys.join(", ")}"
+  def self.worker(worker_class, service: nil, **options)
+    service ||= Esse.config.async_indexing.services.first
+    if service.nil? || SERVICES[service.to_sym].nil?
+      raise ArgumentError, "Invalid service: #{service.inspect}, valid services are: #{SERVICES.keys.join(", ")}"
     end
-    Worker.new(worker_class, **Esse.config.async_indexing.send(adapter).worker_options(worker_class).merge(options))
+
+    Worker.new(worker_class, **Esse.config.async_indexing.send(service).worker_options(worker_class).merge(options), service: service)
   end
 
   def self.jid

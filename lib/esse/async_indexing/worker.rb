@@ -2,12 +2,13 @@
 
 module Esse::AsyncIndexing
   class Worker
-    attr_reader :options, :payload, :worker_class
+    attr_reader :options, :payload, :worker_class, :service
 
     attr_reader :arguments
 
-    def initialize(worker_class, **options)
+    def initialize(worker_class, service: nil, **options)
       @worker_class = worker_class
+      @service = service
       @options = options
       @payload = {}
     end
@@ -61,18 +62,15 @@ module Esse::AsyncIndexing
       self
     end
 
-    # @param :to [Symbol] Adapter key
     # @return Response of service
     # @see Esse::AsyncIndexing::Adapters::** for more details
-    def push(to: nil)
-      to ||= options[:service]
-      unless Esse::AsyncIndexing::SERVICES.include?(to)
-        raise Error, format("Service %<to>p is not implemented. Please use one of %<list>p", to: to, list: SERVICES.keys)
+    def push
+      unless Esse::AsyncIndexing::SERVICES.key?(service)
+        raise Esse::AsyncIndexing::Error, format("Service %<service>p is not implemented. Please use one of #{Esse::AsyncIndexing::SERVICES.keys.map(&:inspect).join(' or ')}.", service: service)
       end
-
       @payload["created_at"] ||= Time.now.to_f
       worker_to_push = with_job_jid
-      Esse::AsyncIndexing::SERVICES[to].push(worker_to_push)
+      Esse::AsyncIndexing::SERVICES[service].push(worker_to_push)
     end
 
     def eql?(other)

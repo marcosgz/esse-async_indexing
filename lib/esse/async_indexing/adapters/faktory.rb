@@ -30,7 +30,7 @@ module Esse::AsyncIndexing
         options[:retry] ||= payload["retry"] if payload.key?("retry")
         options[:queue] ||= payload["queue"] if payload.key?("queue")
 
-        Esse::AsyncIndexing.worker(payload["jobtype"], **options, adapter: :faktory).tap do |worker|
+        Esse::AsyncIndexing.worker(payload["jobtype"], **options, service: :faktory).tap do |worker|
           worker.with_args(*Array(payload["args"])) if payload.key?("args")
           worker.with_job_jid(payload["jid"]) if payload.key?("jid")
           worker.created_at(payload["created_at"]) if payload.key?("created_at")
