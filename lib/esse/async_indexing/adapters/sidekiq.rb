@@ -54,7 +54,7 @@ module Esse::AsyncIndexing
       #
       # @return [Hash] Payload that was sent to redis
       def push
-        @payload["enqueued_at"] = Time.now.to_f
+        normalize_before_push
         # Optimization to enqueue something now that is scheduled to go out now or in the past
         if (timestamp = @payload.delete("at")) && (timestamp > Time.now.to_f)
           Esse.config.async_indexing.sidekiq.redis_pool.with do |redis|
@@ -84,6 +84,10 @@ module Esse::AsyncIndexing
 
       def to_json(value)
         MultiJson.dump(value, mode: :compat)
+      end
+
+      def normalize_before_push
+        @payload["enqueued_at"] = Time.now.to_f
       end
     end
   end

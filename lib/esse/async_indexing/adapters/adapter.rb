@@ -18,6 +18,12 @@ module Esse::AsyncIndexing
       def self.coerce_to_worker(payload, **options)
         raise NotImplemented
       end
+
+      protected
+
+      def normalize_before_push
+        # noop
+      end
     end
   end
 end

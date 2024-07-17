@@ -60,14 +60,7 @@ module Esse::AsyncIndexing
             Faktory client for ruby is not loaded. You must install and require https://github.com/contribsys/faktory_worker_ruby.
           ERR
         end
-        @payload["enqueued_at"] ||= Time.now.to_f
-        {"created_at" => false, "enqueued_at" => false, "at" => true}.each do |field, past_remove|
-          # Optimization to enqueue something now that is scheduled to go out now or in the past
-          if (time = @payload.delete(field)) &&
-              (!past_remove || (past_remove && time > Time.now.to_f))
-            @payload[field] = parse_time(time)
-          end
-        end
+        normalize_before_push
 
         pool = Thread.current[:faktory_via_pool] || ::Faktory.server_pool
         ::Faktory.client_middleware.invoke(@payload, pool) do
@@ -104,6 +97,17 @@ module Esse::AsyncIndexing
 
       def to_json(value)
         MultiJson.dump(value, mode: :compat)
+      end
+
+      def normalize_before_push
+        @payload["enqueued_at"] ||= Time.now.to_f
+        {"created_at" => false, "enqueued_at" => false, "at" => true}.each do |field, past_remove|
+          # Optimization to enqueue something now that is scheduled to go out now or in the past
+          if (time = @payload.delete(field)) &&
+              (!past_remove || (past_remove && time > Time.now.to_f))
+            @payload[field] = parse_time(time)
+          end
+        end
       end
     end
   end

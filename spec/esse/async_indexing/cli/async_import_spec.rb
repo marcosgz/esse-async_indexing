@@ -58,7 +58,7 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
       end
     end
 
-    context "when passing a index with single repository that supports async indexing", :faktory do
+    context "when passing a index with single repository that supports async indexing", :async_indexing_job do
       before do
         collection_class = index_collection_class
         stub_esse_index(:cities) do
@@ -72,14 +72,14 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
       it "enqueues the faktory job for the given index when passing --service=faktory" do
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import CitiesIndex --service=faktory])
-        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_faktory_job("CitiesIndex", "city", "batch_id", {})
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:faktory)
       end
 
       it "detects faktory as the default service name when not passed and is set in the configuration" do
         Esse.config.async_indexing.faktory
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import CitiesIndex])
-        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_faktory_job("CitiesIndex", "city", "batch_id", {})
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:faktory)
       end
     end
   end

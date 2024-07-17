@@ -1,59 +1,51 @@
 # frozen_string_literal: true
 
 module Hooks
-  module FaktoryJobs
+  module AsyncIndexingJobs
     def self.included(base)
       base.before do |example|
-        if example.metadata[:faktory]
-          require "faktory_worker_ruby"
-          require "faktory/testing"
-          Faktory::Testing.fake!
+        if example.metadata[:async_indexing_job]
+          Esse::AsyncIndexing::Testing.enable!
         end
       end
 
       base.after do |example|
-        if example.metadata[:faktory]
-          Faktory::Testing.disable!
+        if example.metadata[:async_indexing_job]
+          Esse::AsyncIndexing::Jobs.clear
+          Esse::AsyncIndexing::Testing.enable!
         end
       end
     end
   end
 end
 
-RSpec::Matchers.define :have_enqueued_faktory_job do |*expected_arguments|
+RSpec::Matchers.define :have_enqueued_async_indexing_job do |*expected_arguments|
   match do |job_class|
-    if job_class.is_a?(String)
-      klass = Object.const_defined?(job_class) ? Object.const_get(job_class) : Class.new { def perform(*); end; } # rubocop:disable Style/SingleLineMethods
-      class_name = job_class
-      job_class = Class.new(klass) do
-        extend Esse::AsyncIndexing::Workers.for(:faktory)
-      end
-      job_class.define_singleton_method(:name) { class_name }
-      job_class.define_singleton_method(:to_s) { class_name }
-      job_class.define_singleton_method(:inspect) { class_name }
-    end
-    @job_class = job_class
-
+    @jobs = Esse::AsyncIndexing::Jobs.jobs_for(class_name: job_class, service: @service)
     if expected_arguments.any?
-      @job_class.jobs.map { |h| h["args"] }.include? expected_arguments
+      @jobs.map { |h| h["args"] }.include? expected_arguments
     else
-      @job_class.jobs.any?
+      @jobs.any?
     end
+  end
+
+  chain :on do |service|
+    @service = service
   end
 
   def formatted_jobs(arr)
     arr.map do |json|
-      "* #{json["jobtype"]} with arguments (#{json["args"].map(&:inspect).join(", ")})"
+      "* #{json["__class_name__"]} with arguments (#{json["args"].map(&:inspect).join(", ")})"
     end.join("\n")
   end
 
   failure_message do |job_class|
     if expected_arguments.any?
-      <<~MSG
-        expected #{job_class} to have an enqueued job with arguments #{expected_arguments.inspect} but it did not.
-        Enqueued jobs:
-        #{formatted_jobs(@job_class.jobs)}
-      MSG
+      msg = "expected #{job_class} to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did not."
+      if @jobs.any?
+        msg << "\nEnqueued jobs:\n#{formatted_jobs(@jobs)}"
+      end
+      msg
     else
       "expected #{job_class} to have an enqueued job but it did not"
     end
@@ -61,11 +53,11 @@ RSpec::Matchers.define :have_enqueued_faktory_job do |*expected_arguments|
 
   failure_message_when_negated do |job_class|
     if expected_arguments.any?
-      <<~MSG
-        expected #{job_class} not to have an enqueued job with arguments #{expected_arguments.inspect} but it did.
-        Enqueued jobs:
-        #{formatted_jobs(@job_class.jobs)}
-      MSG
+      msg = "expected #{job_class} not to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did."
+      if @jobs.any?
+        msg << "\nEnqueued jobs:\n#{formatted_jobs(@jobs)}"
+      end
+      msg
     else
       "expected #{job_class} not to have an enqueued job but it did"
     end
@@ -73,7 +65,7 @@ RSpec::Matchers.define :have_enqueued_faktory_job do |*expected_arguments|
 
   description do
     if expected_arguments.any?
-      "have an enqueued job with arguments #{expected_arguments.inspect}"
+      "have an enqueued job with arguments #{expected_arguments.inspect} on #{@service || "any service"}"
     else
       "have an enqueued job"
     end
@@ -81,5 +73,5 @@ RSpec::Matchers.define :have_enqueued_faktory_job do |*expected_arguments|
 end
 
 RSpec.configure do |config|
-  config.include Hooks::FaktoryJobs
+  config.include Hooks::AsyncIndexingJobs
 end
