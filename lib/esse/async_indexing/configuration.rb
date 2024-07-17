@@ -19,10 +19,6 @@ module Esse
 
       def faktory
         @faktory ||= begin
-          require_relative "workers/faktory"
-          Esse::AsyncIndexing::Workers::Faktory::DEFAULT.each_key do |path|
-            require path
-          end
           services.add(:faktory)
           Configuration::Faktory.new
         end
@@ -35,10 +31,6 @@ module Esse
 
       def sidekiq
         @sidekiq ||= begin
-          require_relative "workers/sidekiq"
-          Esse::AsyncIndexing::Workers::Sidekiq::DEFAULT.each_key do |path|
-            require path
-          end
           services.add(:sidekiq)
           Configuration::Sidekiq.new
         end

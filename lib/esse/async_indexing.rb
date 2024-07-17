@@ -9,9 +9,6 @@ require "multi_json"
 
 module Esse
   module AsyncIndexing
-    module Adapters
-    end
-
     module Actions
     end
 
@@ -19,33 +16,16 @@ module Esse
     end
 
     module Workers
-      def self.for(service, **options)
-        require_relative "async_indexing/workers/#{service}"
-        service = service.to_sym
-        worker_options = options.merge(service: service)
-        module_name = service.to_s.split(/_/i).collect! { |w| w.capitalize }.join
-        mod = Workers.const_get(module_name)
-        mod.module_eval do
-          define_method(:bg_worker_options) do
-            worker_options
-          end
-        end
-        mod
-      end
     end
   end
 end
 
 require_relative "async_indexing/version"
+require_relative "async_indexing/actions"
+require_relative "async_indexing/adapters"
 require_relative "async_indexing/config"
 require_relative "async_indexing/errors"
-require_relative "async_indexing/worker"
-require_relative "async_indexing/actions/upsert_document"
-require_relative "async_indexing/actions/batch_import"
-require_relative "async_indexing/actions/batch_import_all"
-require_relative "async_indexing/adapters/adapter"
-require_relative "async_indexing/adapters/sidekiq"
-require_relative "async_indexing/adapters/faktory"
+require_relative "async_indexing/workers"
 require_relative "plugins/async_indexing"
 
 module Esse::AsyncIndexing

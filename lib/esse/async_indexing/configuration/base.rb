@@ -56,7 +56,7 @@ class Esse::AsyncIndexing::Configuration::Base
   def normalize_workers(_, value)
     return unless value.is_a?(Hash)
 
-    hash = {}
+    hash = Esse::AsyncIndexing::Workers::DEFAULT.values.map { |v| [v, {}] }.to_h
     value.each do |class_name, opts|
       hash[class_name.to_s] = Esse::HashUtils.deep_transform_keys(opts.to_h, &:to_sym)
     end
