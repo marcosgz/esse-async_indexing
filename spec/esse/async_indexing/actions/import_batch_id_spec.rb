@@ -20,7 +20,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::ImportBatchId do
       it "does nothing" do
         expect(VenuesIndex.repo(:venue)).not_to receive(:import) # rubocop:disable RSpec/MessageSpies
 
-        expect(described_class.call("VenuesIndex", "venue", batch_id)).to eq(0)
+        expect(described_class.call("VenuesIndex", "venue", batch_id)).to eq([0, []])
       end
     end
 
@@ -40,7 +40,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::ImportBatchId do
           end
         ).and_return("items" => filtered_venues.map { |venue| {"index" => {"_id" => venue[:id], "status" => 201}} })
 
-        expect(described_class.call("VenuesIndex", "venue", batch_id)).to eq(2)
+        expect(described_class.call("VenuesIndex", "venue", batch_id)).to eq([2, venue_ids])
       end
 
       it "imports all documents for the batch_id with options" do
@@ -53,7 +53,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::ImportBatchId do
           refresh: true
         ).and_return("items" => filtered_venues.map { |venue| {"index" => {"_id" => venue[:id], "status" => 201}} })
 
-        expect(described_class.call("VenuesIndex", "venue", batch_id, suffix: "2024", refresh: true)).to eq(2)
+        expect(described_class.call("VenuesIndex", "venue", batch_id, suffix: "2024", refresh: true)).to eq([2, venue_ids])
       end
     end
   end

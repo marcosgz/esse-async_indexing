@@ -3,7 +3,6 @@
 require "spec_helper"
 
 RSpec.describe Esse::AsyncIndexing::Actions::CoerceIndexRepository do
-
   describe ".call" do
     context "with an invalid index class name" do
       it "raises an ArgumentError when the index class is not found" do

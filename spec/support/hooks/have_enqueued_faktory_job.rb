@@ -41,11 +41,11 @@ RSpec::Matchers.define :have_enqueued_async_indexing_job do |*expected_arguments
 
   failure_message do |job_class|
     if expected_arguments.any?
-      msg = "expected #{job_class} to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did not."
+      msg = ["expected #{job_class} to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did not."]
       if @jobs.any?
-        msg << "\nEnqueued jobs:\n#{formatted_jobs(@jobs)}"
+        msg << "Enqueued jobs:\n#{formatted_jobs(@jobs)}"
       end
-      msg
+      msg.join("\n")
     else
       "expected #{job_class} to have an enqueued job but it did not"
     end
@@ -53,11 +53,11 @@ RSpec::Matchers.define :have_enqueued_async_indexing_job do |*expected_arguments
 
   failure_message_when_negated do |job_class|
     if expected_arguments.any?
-      msg = "expected #{job_class} not to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did."
+      msg = ["expected #{job_class} not to have an enqueued job with arguments #{expected_arguments.inspect}#{%( on #{@service}) if @service} but it did."]
       if @jobs.any?
-        msg << "\nEnqueued jobs:\n#{formatted_jobs(@jobs)}"
+        msg << "Enqueued jobs:\n#{formatted_jobs(@jobs)}"
       end
-      msg
+      msg.join("\n")
     else
       "expected #{job_class} not to have an enqueued job but it did"
     end

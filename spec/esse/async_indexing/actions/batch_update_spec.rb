@@ -40,7 +40,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::BatchUpdate do
         stub_esse_index(:geos) do
           repository :city do
             collection { |**, &block| block.call([{id: 1, name: "City 1"}]) }
-            document { |hash, **| {_id: hash[:id], name: hash[:name] } }
+            document { |hash, **| {_id: hash[:id], name: hash[:name]} }
             lazy_document_attribute :total_venues do |docs|
               docs.map { |doc| [doc.id, 10] }.to_h
             end

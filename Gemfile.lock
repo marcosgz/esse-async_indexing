@@ -23,7 +23,7 @@ GEM
     esse (0.3.4)
       multi_json
       thor (>= 0.19)
-    esse-redis_storage (0.0.1)
+    esse-redis_storage (0.0.2)
       esse (>= 0.2.4)
       redis (>= 4.0.0)
     esse-rspec (0.0.6)

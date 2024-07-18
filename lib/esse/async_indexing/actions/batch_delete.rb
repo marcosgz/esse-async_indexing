@@ -2,7 +2,6 @@
 
 module Esse::AsyncIndexing::Actions
   class BatchDelete
-
     def self.call(index_class_name, repo_name, ids, options = {})
       docs = Esse::LazyDocumentHeader.coerce_each(ids)
       return if docs.empty?

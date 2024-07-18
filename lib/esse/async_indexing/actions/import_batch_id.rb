@@ -9,11 +9,13 @@ module Esse::AsyncIndexing::Actions
       kwargs = options.transform_keys(&:to_sym)
       kwargs[:context] ||= {}
       result = 0
+      ids_from_batch = []
       queue.fetch(batch_id) do |ids|
+        ids_from_batch = ids
         kwargs[:context][:id] = ids
         result = repo_class.import(**kwargs)
       end
-      result
+      [result, ids_from_batch]
     end
   end
 end

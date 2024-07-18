@@ -51,6 +51,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Actions::UpdateLazyDocumentAttribute" => { queue: "indexing" },
   }
   # or if you are using Faktory
   config.async_indexing.faktory.workers = {
@@ -60,6 +61,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Actions::UpdateLazyDocumentAttribute" => { queue: "indexing" },
   }
 end
 ```
@@ -173,6 +175,17 @@ Import a batch of documents from the `GeosIndex.repo(:city)` collection using a 
 batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city)).enqueue(values: big_list_of_uuids)
 Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", service: :sidekiq).with_args("GeosIndex", "city", batch_id, suffix: "20240101")
 ```
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Actions::UpdateLazyDocumentAttribute
+
+Update a lazy attribute of a document from the index using the given ids
+
+```ruby
+batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city), attribute_name: "total_schools").enqueue(values: big_list_of_uuids)
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Actions::UpdateLazyDocumentAttribute", service: :sidekiq).with_args("GeosIndex", "city", "total_schools", batch_id, suffix: "20240101")
+```
+
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
 ### Custom Jobs

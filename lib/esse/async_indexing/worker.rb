@@ -66,7 +66,7 @@ module Esse::AsyncIndexing
     # @see Esse::AsyncIndexing::Adapters::** for more details
     def push
       unless Esse::AsyncIndexing::SERVICES.key?(service)
-        raise Esse::AsyncIndexing::Error, format("Service %<service>p is not implemented. Please use one of #{Esse::AsyncIndexing::SERVICES.keys.map(&:inspect).join(' or ')}.", service: service)
+        raise Esse::AsyncIndexing::Error, format("Service %<service>p is not implemented. Please use one of #{Esse::AsyncIndexing::SERVICES.keys.map(&:inspect).join(" or ")}.", service: service)
       end
       @payload["created_at"] ||= Time.now.to_f
       worker_to_push = with_job_jid
