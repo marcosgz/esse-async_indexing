@@ -47,7 +47,7 @@ Esse.configure do |config|
   config.async_indexing.sidekiq.workers = {
     "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
-    "Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
@@ -56,7 +56,7 @@ Esse.configure do |config|
   config.async_indexing.faktory.workers = {
     "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
-    "Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
@@ -108,7 +108,8 @@ The gem provides a few jobs to index, update, upsert and delete document or batc
 But for make sure to require the jobs in the worker application by calling `install!`
 
 ```ruby
-Esse::AsyncIndexing::Workers.install!
+Esse::AsyncIndexing::Workers.install!(:faktory)
+Esse::AsyncIndexing::Workers.install!(:sidekiq)
 ```
 
 
@@ -123,12 +124,12 @@ Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", se
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
-### Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob
+### Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob
 
 Fetch a document from `GeosIndex.repo(:city)` collection using the given id and update it
 
 ```ruby
-Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
