@@ -174,6 +174,27 @@ Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", servic
 ```
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
+### Custom Jobs
+
+To implement a custom job :import, :index, :update or :delete documents, you need to define them using the `async_indexing_job` method in the index repository.
+
+```ruby
+class GeosIndex < Esse::Index
+  plugin :async_indexing
+
+  repository :city do
+    collection Collections::CityCollection
+    document Documents::CityDocument
+    async_indexing_job(:import) do |_repo_class, _operation_name, ids, **kwargs|
+      GeosCityImportJob.perform_later(ids, **kwargs)
+    end
+    async_indexing_job(:index, :update, :delete)  do |_repo_class, _operation_name, id, **kwargs|
+      GeosCityUpsertJob.perform_later(id, **kwargs)
+    end
+  end
+end
+```
+
 ## Extras
 
 You may want to use `async_indexing_callback` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents when the model is created, updated or destroyed. This functionality is provided by the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem.
