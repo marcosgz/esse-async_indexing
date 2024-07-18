@@ -3,7 +3,7 @@
 require "spec_helper"
 require "shared_contexts/with_venues_index_definition"
 
-RSpec.describe Esse::AsyncIndexing::Actions::UpsertDocument, freeze_at: [2020, 7, 2, 12, 30, 50] do
+RSpec.describe Esse::AsyncIndexing::Actions::UpsertDocument do
   include_context "with venues index definition"
 
   before do
