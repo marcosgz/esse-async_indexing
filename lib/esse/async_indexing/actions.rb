@@ -10,6 +10,7 @@ end
 require_relative "actions/coerce_index_repository"
 require_relative "actions/batch_import_all"
 require_relative "actions/batch_import"
+require_relative "actions/batch_delete"
 require_relative "actions/batch_update"
 require_relative "actions/delete_document"
 require_relative "actions/import_batch_id"
