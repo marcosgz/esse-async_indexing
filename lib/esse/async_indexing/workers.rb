@@ -6,9 +6,12 @@ module Esse
   module AsyncIndexing
     module Workers
       DEFAULT = {
+        "esse/async_indexing/jobs/document_delete_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob",
+        "esse/async_indexing/jobs/document_index_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob",
+        "esse/async_indexing/jobs/document_update_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob",
+        "esse/async_indexing/jobs/document_upsert_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob",
         "esse/async_indexing/jobs/import_all_job" => "Esse::AsyncIndexing::Jobs::ImportAllJob",
-        "esse/async_indexing/jobs/import_batch_id_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob",
-        "esse/async_indexing/jobs/upsert_document_id_job" => "Esse::AsyncIndexing::Jobs::UpsertDocumentIdJob"
+        "esse/async_indexing/jobs/import_batch_id_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob"
       }
 
       # The backend service may live in a different application, so they are not required by default.

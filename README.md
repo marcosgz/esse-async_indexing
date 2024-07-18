@@ -21,7 +21,168 @@ $ bundle install
 
 ```ruby
 Esse.configure do |config|
+  config.redis = ConnectionPool.new(size: 10, timeout: 5) do
+    Redis.new(url: ENV.fetch('REDIS_URL', 'redis://0.0.0.0:6379'))
+  end
 
+  # Setup Sidekiq
+  require 'sidekiq'
+  config.async_indexing.sidekiq do |sidekiq|
+    sidekiq.namespace = "sidekiq"
+    sidekiq.redis = ConnectionPool.new(size: 10, timeout: 5) do
+      Redis.new(url: ENV.fetch('REDIS_URL', 'redis://0.0.0.0:6379'))
+    end
+  end
+
+  # Faktory
+  require 'faktory_worker_ruby'
+  config.async_indexing.faktory # No need to setup redis connection
+end
+```
+
+Optional worker configuration:
+
+```ruby
+Esse.configure do |config|
+  config.async_indexing.sidekiq.workers = {
+    "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+  }
+  # or if you are using Faktory
+  config.async_indexing.faktory.workers = {
+    "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+  }
+end
+```
+
+## Index Configuration
+
+To enable async indexing for an index, you need to add the `:async_indexing` plugin to the index. And the index collection must implement the `#each_batch_ids` method that yields an array of document ids.
+
+```ruby
+class GeosIndex < Esse::Index
+  plugin :async_indexing
+
+  repository :city do
+    collection Collections::CityCollection
+    document Documents::CityDocument
+  end
+end
+
+class GeosIndex::Collections::CityCollection < Esse::Collection
+  def each
+    # implement the each method as usual
+  end
+
+  def each_batch_ids
+    ::City.select(:id).except(:includes, :preload).find_in_batches(**batch_options) do |rows|
+      yield(rows.map(&:id))
+    end
+  end
+end
+```
+
+## CLI Commands
+
+This gem includes the `async_import` command to import documents asynchronously.
+
+```bash
+$ bundle exec esse index help async_import
+$ bundle exec esse index async_import GeosIndex --suffix="20240101" --service="sidekiq" --repo="city"
+```
+
+
+## Workers/Jobs
+
+The gem provides a few jobs to index, update, upsert and delete document or batch of documents with given ids. The sidekiq or faktory worker does not need to live in the same application that enqueues the job. The worker can be in a separate application that only runs the worker process. This gem has its own DSL to push jobs.
+
+But for make sure to require the jobs in the worker application by calling `install!`
+
+```ruby
+Esse::AsyncIndexing::Workers.install!
+```
+
+
+### Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob
+
+Fetch a document from `GeosIndex.repo(:city)` collection using the given id and index it
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
+.push
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob
+
+Fetch a document from `GeosIndex.repo(:city)` collection using the given id and update it
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob
+
+Fetch a document from `GeosIndex.repo(:city)` collection using the given id and upsert it
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+
+### Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob
+
+Delete a document from the index using the given id
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob", service: :sidekiq).with_args("GeosIndex", "city", city.id, suffix: "20240101")
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::ImportAllJob
+
+Import all documents from the `GeosIndex.repo(:city)` collection where `state_abbr` is "IL"
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportAllJob", service: :sidekiq).with_args("GeosIndex", "city", context: {state_abbr: "IL"}, suffix: "20240101")
+```
+
+**Note:** Suffix and import context are optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::ImportBatchIdJob
+
+Import a batch of documents from the `GeosIndex.repo(:city)` collection using a batch_id generated by the [esse-redis_storage](https://github.com/marcosgz/esse-redis_storage) gem. This is the job that the `async_import` command uses.
+
+```ruby
+batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city)).enqueue(values: big_list_of_uuids)
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", service: :sidekiq).with_args("GeosIndex", "city", batch_id, suffix: "20240101")
+```
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+## Extras
+
+You may want to use `async_indexing_callback` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents when the model is created, updated or destroyed. This functionality is provided by the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem.
+
+```ruby
+class City < ApplicationRecord
+  include Esse::ActiveRecord::Model
+
+  async_indexing_callback('geos_index:city') { id }
 end
 ```
 

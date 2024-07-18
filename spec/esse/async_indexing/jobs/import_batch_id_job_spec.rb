@@ -4,10 +4,6 @@ require "spec_helper"
 require "esse/async_indexing/jobs/import_batch_id_job"
 
 RSpec.describe Esse::AsyncIndexing::Jobs::ImportBatchIdJob do
-  before do
-    Esse.config.async_indexing.faktory # It will require faktory jobs
-  end
-
   let(:batch_id) { SecureRandom.uuid }
 
   describe ".perform" do
