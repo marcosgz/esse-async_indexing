@@ -16,7 +16,9 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
 
       repos.each do |repo|
         unless Esse::AsyncIndexing.async_indexing_repo?(repo)
-          raise Esse::CLI::InvalidOption, format("The %<repo>p repository does not support async indexing", repo: repo)
+          raise Esse::CLI::InvalidOption, <<~MSG
+            The #{repo} repository does not support async indexing. Make sure you have the `plugin :async_indexing` in your `#{index}` class and the :#{repo.repo_name} collection implements the `#each_batch_ids` method.
+          MSG
         end
 
         enqueuer = if (caller = repo.async_indexing_jobs[:import])
