@@ -211,13 +211,24 @@ end
 
 ## Extras
 
-You may want to use `async_indexing_callback` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents when the model is created, updated or destroyed. This functionality is provided by the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem.
+You may want to use `async_indexing_callback` or `async_update_lazy_attribute` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents or attributes when the model is created, updated or destroyed.
+
+This functionality require the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem to be installed. Then require the `esse/asyn_indexing/active_record` file in the initializer.
+
+```ruby
+require 'esse/async_indexing/active_record'
+```
+
+Now you can use the `async_indexing_callback` method in the ActiveRecord models.
 
 ```ruby
 class City < ApplicationRecord
   include Esse::ActiveRecord::Model
 
+  belongs_to :state, optional: true
+
   async_indexing_callback('geos_index:city') { id }
+  async_update_lazy_attribute('geos_index:state', 'cities_count', if: :state_id?) { state_id }
 end
 ```
 
