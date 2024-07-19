@@ -31,11 +31,11 @@ module Esse
 
         # DSL to define custom job enqueueing
         #
-        # async_indexing_job(:import) do |repo, operation, ids, **kwargs|
-        #   MyCustomJob.perform_later(repo.index.name, ids, **kwargs)
+        # async_indexing_job(:import) do |service_name, repository_class, operation_name, id, **kwargs|
+        #   MyCustomJob.perform_later(repository_class.index.name, ids, **kwargs)
         # end
-        # async_indexing_job(:index, :update, :delete) do |repo, operation, id, **kwargs|
-        #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
+        # async_indexing_job(:index, :update, :delete) do |service_name, repository_class, operation_name, id, **kwargs|
+        #   MyCustomJob.perform_later(repository_class.index.name, [id], **kwargs)
         # end
         def async_indexing_job(*operations, &block)
           operations = AsyncIndexingJobValidator::OPERATIONS if operations.empty?
@@ -58,9 +58,14 @@ module Esse
               raise ArgumentError, "The block of async_indexing_job must be a callable object"
             end
             allowed = %i[req opt]
-            if (vals = block.parameters.map(&:first).take(3)).size != 3 ||
+            if (vals = block.parameters.map(&:first).take(4)).size != 4 ||
                 vals.any? { |val| !allowed.include?(val) }
-              raise ArgumentError, "The block will be called with repo as the first argument, operation as the second argument, id/ids as the third argument, and optional keyword arguments"
+              raise ArgumentError, <<~MSG
+                The block of async_indexing_job must have the following signature:
+                async_indexing_job(:import) do |service_name, repository_class, operation_name, id/ids, **kwargs|
+                  # your code here
+                end
+              MSG
             end
             operations.each do |operation|
               next if OPERATIONS.include?(operation)

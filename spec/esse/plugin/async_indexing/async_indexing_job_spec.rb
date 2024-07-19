@@ -7,7 +7,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
     stub_esse_index(:geos) do
       plugin :async_indexing
       repository :state, const: true do
-        async_indexing_job { |repo, op, ids, **kwargs| }
+        async_indexing_job { |service, repo, op, ids, **kwargs| }
       end
     end
     expect(GeosIndex::State.async_indexing_jobs.keys).to match_array(%i[import index update delete])
@@ -18,7 +18,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
     stub_esse_index(:geos) do
       plugin :async_indexing
       repository :state, const: true do
-        async_indexing_job(:import) { |repo, op, ids, **kwargs| }
+        async_indexing_job(:import) { |service, repo, op, ids, **kwargs| }
       end
     end
     expect(GeosIndex::State.async_indexing_jobs.keys).to match_array(%i[import])
@@ -29,8 +29,8 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
     stub_esse_index(:geos) do
       plugin :async_indexing
       repository :state, const: true do
-        async_indexing_job(:import) { |repo, op, ids, **kwargs| }
-        async_indexing_job(:index) { |repo, op, id, **kwargs| }
+        async_indexing_job(:import) { |service, repo, op, ids, **kwargs| }
+        async_indexing_job(:index) { |service, repo, op, id, **kwargs| }
       end
     end
     expect(GeosIndex::State.async_indexing_jobs.keys).to match_array(%i[import index])
@@ -58,7 +58,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
           async_indexing_job { |repo, **kwargs| }
         end
       end
-    }.to raise_error(ArgumentError, /The block will be called with repo as the first argument/)
+    }.to raise_error(ArgumentError, /block of async_indexing_job must have the following signature/)
   end
 
   it "raises an error when the async_indexing_job block is keywork arguments only" do
@@ -69,6 +69,6 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
           async_indexing_job { |**kwargs| }
         end
       end
-    }.to raise_error(ArgumentError, /The block will be called with repo as the first argument/)
+    }.to raise_error(ArgumentError, /block of async_indexing_job must have the following signature/)
   end
 end

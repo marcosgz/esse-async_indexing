@@ -22,7 +22,7 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
         end
 
         enqueuer = if (caller = repo.async_indexing_jobs[:import])
-          ->(ids) { caller.call(repo, :import, ids, **bulk_options) }
+          ->(ids) { caller.call(service_name, repo, :import, ids, **bulk_options) }
         else
           queue = Esse::RedisStorage::Queue.for(repo: repo)
           ->(ids) do

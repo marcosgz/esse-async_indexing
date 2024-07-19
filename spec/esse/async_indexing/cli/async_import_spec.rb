@@ -136,8 +136,8 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
           plugin :async_indexing
           repository :country do
             collection collection_class
-            async_indexing_job(:import) do |repo, op, ids, **options|
-              Thread.current[:custom_job] = [repo, op, ids, options]
+            async_indexing_job(:import) do |service, repo, op, ids, **options|
+              Thread.current[:custom_job] = [service, repo, op, ids, options]
             end
           end
         end
@@ -147,14 +147,14 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import GeosIndex --service=faktory])
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job
-        expect(Thread.current[:custom_job]).to eq([GeosIndex::Country, :import, [1, 2, 3], {}])
+        expect(Thread.current[:custom_job]).to eq([:faktory, GeosIndex::Country, :import, [1, 2, 3], {}])
       end
 
       it "enqueues the custom job for the given index when passing --service=sidekiq" do
         allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
         cli_exec(%w[index async_import GeosIndex --service=sidekiq])
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job
-        expect(Thread.current[:custom_job]).to eq([GeosIndex::Country, :import, [1, 2, 3], {}])
+        expect(Thread.current[:custom_job]).to eq([:sidekiq, GeosIndex::Country, :import, [1, 2, 3], {}])
       end
     end
   end
