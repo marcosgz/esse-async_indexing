@@ -4,6 +4,38 @@ module Esse
   module Plugins
     module AsyncIndexing
       module RepositoryClassMethods
+        DEFAULT_ASYNC_INDEXING_JOBS = {
+          import: ->(service, repo, _operation, ids, **kwargs) {
+            unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
+              batch_id = Esse::RedisStorage::Queue.for(repo: repo).enqueue(values: ids)
+              Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", service: service)
+                .with_args(repo.index.name, repo.repo_name, batch_id, kwargs)
+                .push
+            end
+          },
+          index: ->(service, repo, _operation, id, **kwargs) {
+            if id
+              Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", service: service)
+                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .push
+            end
+          },
+          update: ->(service, repo, _operation, id, **kwargs) {
+            if id
+              Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob", service: service)
+                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .push
+            end
+          },
+          delete: ->(service, repo, _operation, id, **kwargs) {
+            if id
+              Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob", service: service)
+                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .push
+            end
+          }
+        }.freeze
+
         # This method is used to retrieve only the ids of the documents in the collection.
         # It's used to asynchronously index the documents.
         # The #each_batch_ids method is optional and should be implemented by the collection class.
@@ -48,6 +80,10 @@ module Esse
 
         def async_indexing_jobs
           @async_indexing_jobs || {}.freeze
+        end
+
+        def async_indexing_job_for(operation)
+          async_indexing_jobs[operation] || DEFAULT_ASYNC_INDEXING_JOBS[operation] || raise(ArgumentError, "The #{operation} operation is not implemented")
         end
 
         class AsyncIndexingJobValidator
