@@ -61,7 +61,3 @@ Esse::Config.__send__ :include, Esse::AsyncIndexing::Config
 if defined?(Esse::CLI)
   require_relative "async_indexing/cli"
 end
-
-# if defined?(Esse::ActiveRecord)
-#   require_relative "async_indexing/active_record"
-# end
