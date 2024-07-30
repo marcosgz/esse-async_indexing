@@ -235,7 +235,7 @@ Now you can use the `async_index_callback` or `async_update_lazy_attribute_callb
 
 ```ruby
 class City < ApplicationRecord
-  include Esse::ActiveRecord::Model
+  include Esse::AsyncIndexing::ActiveRecord::Model
 
   belongs_to :state, optional: true
 

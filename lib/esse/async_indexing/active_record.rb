@@ -43,35 +43,49 @@ module Esse
       end
     end
 
-    module ActiveRecordModelClassMethods
-      # Define callback on create/update/delete to push a job to the async indexing the document.
-      #
-      # @param [String] index_repo_name The path of index and repository name.
-      #   For example a index with a single repository named `users` is `users`. And a index with
-      #   multiple repositories named `animals` and `dog` as the repository name is `animals/dog`.
-      #   For namespace, use `/` as the separator.
-      # @raise [ArgumentError] when the repo and events are already registered
-      # @raise [ArgumentError] when the specified index have multiple repos
-      def async_index_callback(index_repo_name, on: %i[create update destroy], with: nil, **options, &block)
-        options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
-        Array(on).each do |event|
-          esse_callback(index_repo_name, :async_indexing, on: event, with: with, **options, &block)
+    # Usage:
+    # class User < ApplicationRecord
+    #  include Esse::AsyncIndexing::ActiveRecord::Model
+    module ActiveRecord
+      module Model
+        def self.included(base)
+          unless base.respond_to?(:esse_index)
+            base.include(Esse::ActiveRecord::Model)
+          end
+          base.extend(ClassMethods)
         end
-      end
 
-      # Define callback on create/update/delete to push a job to the async update a lazy attribute.
-      #
-      # @param [String] index_repo_name The path of index and repository name.
-      #   For example a index with a single repository named `users` is `users`. And a index with
-      #   multiple repositories named `animals` and `dog` as the repository name is `animals/dog`.
-      #   For namespace, use `/` as the separator.
-      # @param [String, Symbol] attribute_name The name of the lazy attribute to update.
-      # @raise [ArgumentError] when the repo and events are already registered
-      # @raise [ArgumentError] when the specified index have multiple repos
-      def async_update_lazy_attribute_callback(index_repo_name, attribute_name, on: %i[create update destroy], **options, &block)
-        options[:attribute_name] = attribute_name
-        options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
-        esse_callback(index_repo_name, :async_update_lazy_attribute, identifier_suffix: attribute_name.to_sym, on: on, **options, &block)
+        module ClassMethods
+          # Define callback on create/update/delete to push a job to the async indexing the document.
+          #
+          # @param [String] index_repo_name The path of index and repository name.
+          #   For example a index with a single repository named `users` is `users`. And a index with
+          #   multiple repositories named `animals` and `dog` as the repository name is `animals/dog`.
+          #   For namespace, use `/` as the separator.
+          # @raise [ArgumentError] when the repo and events are already registered
+          # @raise [ArgumentError] when the specified index have multiple repos
+          def async_index_callback(index_repo_name, on: %i[create update destroy], with: nil, **options, &block)
+            options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
+            Array(on).each do |event|
+              esse_callback(index_repo_name, :async_indexing, on: event, with: with, **options, &block)
+            end
+          end
+
+          # Define callback on create/update/delete to push a job to the async update a lazy attribute.
+          #
+          # @param [String] index_repo_name The path of index and repository name.
+          #   For example a index with a single repository named `users` is `users`. And a index with
+          #   multiple repositories named `animals` and `dog` as the repository name is `animals/dog`.
+          #   For namespace, use `/` as the separator.
+          # @param [String, Symbol] attribute_name The name of the lazy attribute to update.
+          # @raise [ArgumentError] when the repo and events are already registered
+          # @raise [ArgumentError] when the specified index have multiple repos
+          def async_update_lazy_attribute_callback(index_repo_name, attribute_name, on: %i[create update destroy], **options, &block)
+            options[:attribute_name] = attribute_name
+            options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
+            esse_callback(index_repo_name, :async_update_lazy_attribute, identifier_suffix: attribute_name.to_sym, on: on, **options, &block)
+          end
+        end
       end
     end
   end
@@ -86,4 +100,3 @@ require_relative "active_record_callbacks/on_destroy"
 require_relative "active_record_callbacks/lazy_update_attribute"
 
 Esse::AsyncIndexing.__register_active_record_callbacks!
-Esse::ActiveRecord::Model::ClassMethods.include(Esse::AsyncIndexing::ActiveRecordModelClassMethods)

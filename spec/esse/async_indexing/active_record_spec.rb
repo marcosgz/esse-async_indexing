@@ -44,10 +44,10 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
     end
   end
 
-  describe "ActiveRecordModelClassMethods" do
+  describe "Esse::AsyncIndexing::ActiveRecord::Model" do
     let(:model_class) do
       Class.new do
-        include Esse::ActiveRecord::Model
+        include Esse::AsyncIndexing::ActiveRecord::Model
       end
     end
 
