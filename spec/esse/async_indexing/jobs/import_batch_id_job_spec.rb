@@ -36,39 +36,39 @@ RSpec.describe Esse::AsyncIndexing::Jobs::ImportBatchIdJob do
       it "does not enqueue the lazy_document_attributes job when the job does no implement bg_worker_options" do
         expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, {}).and_return(10)
         described_class.new.perform("GeosIndex", "city", batch_id, {})
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
       end
 
       it "calls Esse::AsyncIndexing::Actions::UpsertDocument.call and enqueues the lazy_document_attributes job" do
         expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, {}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, {})
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'eager_include_document_attributes' option is set to true" do
         expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, "eager_include_document_attributes" => true).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, "eager_include_document_attributes" => true)
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'lazy_update_document_attributes' option is set to true" do
         expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => true).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => true)
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
       end
 
       it "enqueues the lazy_document_attributes job when the 'lazy_update_document_attributes' or 'eager_include_document_attributes' options are set to false" do
         allow(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => false)
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
 
         Esse::AsyncIndexing::Jobs.clear
         desc_class.new.perform("GeosIndex", "city", batch_id, "eager_include_document_attributes" => false)
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
 
         Esse::AsyncIndexing::Jobs.clear
         desc_class.new.perform("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => false, "eager_include_document_attributes" => false)
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
+        expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job("GeosIndex", "city", "total_venues", batch_id, {}).on(:faktory)
       end
     end
   end

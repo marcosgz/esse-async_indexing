@@ -5,18 +5,22 @@ module Esse::AsyncIndexing
     class Callback < ::Esse::ActiveRecord::Callback
       attr_reader :service_name
 
-      def initialize(service_name:, with: nil, **kwargs, &block)
+      def initialize(service_name:, with: nil, **kwargs)
         @service_name = service_name
         @with = with
-        super(**kwargs, &block)
+        super(**kwargs)
       end
 
       protected
 
       def resolve_document_id(model)
+        resolve_document_ids(model).first
+      end
+
+      def resolve_document_ids(model)
         ::Esse::ArrayUtils.wrap(block_result || model).map do |record|
           record.is_a?(::ActiveRecord::Base) ? record.id : record
-        end.compact.first
+        end.compact
       end
     end
   end

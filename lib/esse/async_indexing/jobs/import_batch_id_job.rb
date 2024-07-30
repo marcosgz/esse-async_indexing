@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Esse::AsyncIndexing::Jobs::ImportBatchIdJob
-  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob"
+  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob"
 
   def perform(index_class_name, repo_name, batch_id, options = {})
     total, ids = Esse::AsyncIndexing::Actions::ImportBatchId.call(index_class_name, repo_name, batch_id, options)

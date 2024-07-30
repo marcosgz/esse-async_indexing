@@ -17,47 +17,29 @@ RSpec.describe Esse::AsyncIndexing::Actions::UpdateLazyDocumentAttribute do
   end
 
   describe ".call" do
-    let(:city_ids) { [1] }
+    let(:city_ids) { ["1"] }
 
-    context "when the batch_id does not exist" do
-      let(:batch_id) { SecureRandom.uuid }
+    it "imports all documents for the batch_id" do
+      expect(GeosIndex).to esse_receive_request(:bulk).with(
+        index: GeosIndex.index_name,
+        body: city_ids.map do |id|
+          {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
+        end
+      ).and_return("items" => [])
 
-      it "does nothing" do
-        expect(GeosIndex.repo(:city)).not_to receive(:import) # rubocop:disable RSpec/MessageSpies
-
-        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id)).to eq([])
-      end
+      expect(described_class.call("GeosIndex", "city", "total_neighborhoods", city_ids)).to eq(["1"])
     end
 
-    context "when the batch_id exists" do
-      let(:batch_id) { SecureRandom.uuid }
+    it "imports all documents for the batch_id with options" do
+      expect(GeosIndex).to esse_receive_request(:bulk).with(
+        index: GeosIndex.index_name(suffix: "2024"),
+        body: city_ids.map do |id|
+          {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
+        end,
+        refresh: true
+      ).and_return("items" => [])
 
-      before do
-        Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city), attribute_name: "total_neighborhoods").enqueue(id: batch_id, values: city_ids)
-      end
-
-      it "imports all documents for the batch_id" do
-        expect(GeosIndex).to esse_receive_request(:bulk).with(
-          index: GeosIndex.index_name,
-          body: city_ids.map do |id|
-            {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
-          end
-        ).and_return("items" => [])
-
-        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id)).to eq(["1"])
-      end
-
-      it "imports all documents for the batch_id with options" do
-        expect(GeosIndex).to esse_receive_request(:bulk).with(
-          index: GeosIndex.index_name(suffix: "2024"),
-          body: city_ids.map do |id|
-            {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
-          end,
-          refresh: true
-        ).and_return("items" => [])
-
-        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id, suffix: "2024", refresh: true)).to eq(["1"])
-      end
+      expect(described_class.call("GeosIndex", "city", "total_neighborhoods", city_ids, suffix: "2024", refresh: true)).to eq(["1"])
     end
   end
 end

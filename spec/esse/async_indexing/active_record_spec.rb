@@ -10,12 +10,16 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
       expect(defined?(Esse::AsyncIndexing::ActiveRecordCallbacks::OnCreate)).to eq("constant")
       expect(defined?(Esse::AsyncIndexing::ActiveRecordCallbacks::OnUpdate)).to eq("constant")
       expect(defined?(Esse::AsyncIndexing::ActiveRecordCallbacks::OnDestroy)).to eq("constant")
+      expect(defined?(Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute)).to eq("constant")
     end
 
     it "registers the callbacks" do
       expect(Esse::ActiveRecord::Callbacks.registered?(:async_indexing, :create)).to be(true)
       expect(Esse::ActiveRecord::Callbacks.registered?(:async_indexing, :update)).to be(true)
       expect(Esse::ActiveRecord::Callbacks.registered?(:async_indexing, :destroy)).to be(true)
+      expect(Esse::ActiveRecord::Callbacks.registered?(:async_update_lazy_attribute, :create)).to be(true)
+      expect(Esse::ActiveRecord::Callbacks.registered?(:async_update_lazy_attribute, :update)).to be(true)
+      expect(Esse::ActiveRecord::Callbacks.registered?(:async_update_lazy_attribute, :destroy)).to be(true)
     end
 
     it "raises an error if the esse-active_record plugin is not defined" do
@@ -37,6 +41,44 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
       expect {
         Esse::AsyncIndexing.__validate_active_record_version!
       }.not_to raise_error
+    end
+  end
+
+  describe "ActiveRecordModelClassMethods" do
+    let(:model_class) do
+      Class.new do
+        include Esse::ActiveRecord::Model
+      end
+    end
+
+    it "defines the async_index_callback method" do
+      expect(model_class).to respond_to(:async_index_callback)
+    end
+
+    it "calls the async_update_lazy_attribute method" do
+      expect(model_class).to respond_to(:async_update_lazy_attribute)
+    end
+
+    it "calls the esse_callback by setting the async_indexing callback" do
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :create, with: nil)
+      model_class.async_index_callback("users", on: :create)
+
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :update, with: nil)
+      model_class.async_index_callback("users", on: :update)
+
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :destroy, with: nil)
+      model_class.async_index_callback("users", on: :destroy)
+    end
+
+    it "calls the esse_callback by setting the async_update_lazy_attribute callback" do
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :create, identifier_suffix: :msg_count, attribute_name: "msg_count")
+      model_class.async_update_lazy_attribute("users", "msg_count", on: :create)
+
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :update, identifier_suffix: :msg_count, attribute_name: "msg_count")
+      model_class.async_update_lazy_attribute("users", "msg_count", on: :update)
+
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :destroy, identifier_suffix: :msg_count, attribute_name: "msg_count")
+      model_class.async_update_lazy_attribute("users", "msg_count", on: :destroy)
     end
   end
 end
