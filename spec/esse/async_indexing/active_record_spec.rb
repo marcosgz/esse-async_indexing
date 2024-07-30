@@ -63,8 +63,8 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
       expect(model_class).to respond_to(:async_index_callback)
     end
 
-    it "calls the async_update_lazy_attribute method" do
-      expect(model_class).to respond_to(:async_update_lazy_attribute)
+    it "calls the async_update_lazy_attribute_callback method" do
+      expect(model_class).to respond_to(:async_update_lazy_attribute_callback)
     end
 
     it "calls the esse_callback by setting the async_indexing callback" do
@@ -80,13 +80,13 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
 
     it "calls the esse_callback by setting the async_update_lazy_attribute callback" do
       expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :create, identifier_suffix: :msg_count, service_name: :faktory, attribute_name: "msg_count")
-      model_class.async_update_lazy_attribute("users", "msg_count", on: :create)
+      model_class.async_update_lazy_attribute_callback("users", "msg_count", on: :create)
 
       expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :update, identifier_suffix: :msg_count, service_name: :sidekiq, attribute_name: "msg_count")
-      model_class.async_update_lazy_attribute("users", "msg_count", on: :update, service_name: :sidekiq)
+      model_class.async_update_lazy_attribute_callback("users", "msg_count", on: :update, service_name: :sidekiq)
 
       expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :destroy, identifier_suffix: :msg_count, service_name: :faktory, attribute_name: "msg_count")
-      model_class.async_update_lazy_attribute("users", "msg_count", on: :destroy)
+      model_class.async_update_lazy_attribute_callback("users", "msg_count", on: :destroy)
     end
 
     it "raises an error if the service_name is not configured" do
@@ -95,7 +95,7 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
       }.to raise_error(/Invalid service: :unknown/)
 
       expect {
-        model_class.async_update_lazy_attribute("users", "msg_count", on: :create, service_name: :unknown)
+        model_class.async_update_lazy_attribute_callback("users", "msg_count", on: :create, service_name: :unknown)
       }.to raise_error(/Invalid service: :unknown/)
     end
   end
