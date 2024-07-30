@@ -12,7 +12,7 @@ module Esse
         "esse/async_indexing/jobs/document_update_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob",
         "esse/async_indexing/jobs/document_upsert_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob",
         "esse/async_indexing/jobs/import_all_job" => "Esse::AsyncIndexing::Jobs::ImportAllJob",
-        "esse/async_indexing/jobs/bulk_import_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob",
+        "esse/async_indexing/jobs/import_batch_id_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob",
         "esse/async_indexing/jobs/update_lazy_document_attribute_job" => "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob"
       }
 

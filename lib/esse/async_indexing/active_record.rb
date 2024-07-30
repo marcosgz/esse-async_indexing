@@ -53,6 +53,7 @@ module Esse
       # @raise [ArgumentError] when the repo and events are already registered
       # @raise [ArgumentError] when the specified index have multiple repos
       def async_index_callback(index_repo_name, on: %i[create update destroy], with: nil, **options, &block)
+        options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
         Array(on).each do |event|
           esse_callback(index_repo_name, :async_indexing, on: event, with: with, **options, &block)
         end
@@ -69,6 +70,7 @@ module Esse
       # @raise [ArgumentError] when the specified index have multiple repos
       def async_update_lazy_attribute(index_repo_name, attribute_name, on: %i[create update destroy], **options, &block)
         options[:attribute_name] = attribute_name
+        options[:service_name] = ::Esse::AsyncIndexing.service_name(options[:service_name])
         esse_callback(index_repo_name, :async_update_lazy_attribute, identifier_suffix: attribute_name.to_sym, on: on, **options, &block)
       end
     end

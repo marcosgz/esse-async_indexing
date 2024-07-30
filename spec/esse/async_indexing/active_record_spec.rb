@@ -51,6 +51,14 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
       end
     end
 
+    before do
+      Esse.config.async_indexing.faktory
+    end
+
+    after do
+      reset_config!
+    end
+
     it "defines the async_index_callback method" do
       expect(model_class).to respond_to(:async_index_callback)
     end
@@ -60,25 +68,35 @@ RSpec.describe "esse/async_indexing/active_record" do # rubocop:disable RSpec/De
     end
 
     it "calls the esse_callback by setting the async_indexing callback" do
-      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :create, with: nil)
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :create, with: nil, service_name: :faktory)
       model_class.async_index_callback("users", on: :create)
 
-      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :update, with: nil)
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :update, with: nil, service_name: :faktory)
       model_class.async_index_callback("users", on: :update)
 
-      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :destroy, with: nil)
-      model_class.async_index_callback("users", on: :destroy)
+      expect(model_class).to receive(:esse_callback).with("users", :async_indexing, on: :destroy, with: nil, service_name: :sidekiq)
+      model_class.async_index_callback("users", on: :destroy, service_name: :sidekiq)
     end
 
     it "calls the esse_callback by setting the async_update_lazy_attribute callback" do
-      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :create, identifier_suffix: :msg_count, attribute_name: "msg_count")
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :create, identifier_suffix: :msg_count, service_name: :faktory, attribute_name: "msg_count")
       model_class.async_update_lazy_attribute("users", "msg_count", on: :create)
 
-      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :update, identifier_suffix: :msg_count, attribute_name: "msg_count")
-      model_class.async_update_lazy_attribute("users", "msg_count", on: :update)
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :update, identifier_suffix: :msg_count, service_name: :sidekiq, attribute_name: "msg_count")
+      model_class.async_update_lazy_attribute("users", "msg_count", on: :update, service_name: :sidekiq)
 
-      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :destroy, identifier_suffix: :msg_count, attribute_name: "msg_count")
+      expect(model_class).to receive(:esse_callback).with("users", :async_update_lazy_attribute, on: :destroy, identifier_suffix: :msg_count, service_name: :faktory, attribute_name: "msg_count")
       model_class.async_update_lazy_attribute("users", "msg_count", on: :destroy)
+    end
+
+    it "raises an error if the service_name is not configured" do
+      expect {
+        model_class.async_index_callback("users", on: :create, service_name: :unknown)
+      }.to raise_error(/Invalid service: :unknown/)
+
+      expect {
+        model_class.async_update_lazy_attribute("users", "msg_count", on: :create, service_name: :unknown)
+      }.to raise_error(/Invalid service: :unknown/)
     end
   end
 end

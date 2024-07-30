@@ -38,12 +38,21 @@ module Esse::AsyncIndexing
   # @param options [Hash] Options that will be passed along to the worker instance
   # @return [Esse::AsyncIndexing::Worker] An instance of worker
   def self.worker(worker_class, service: nil, **options)
-    service ||= Esse.config.async_indexing.services.first
-    if service.nil? || SERVICES[service.to_sym].nil?
-      raise ArgumentError, "Invalid service: #{service.inspect}, valid services are: #{SERVICES.keys.join(", ")}"
+    serv_name = service_name(service)
+    Worker.new(worker_class, **Esse.config.async_indexing.send(service).worker_options(worker_class).merge(options), service: serv_name)
+  end
+
+  def self.service_name(identifier = nil)
+    identifier ||= Esse.config.async_indexing.services.first
+    if identifier.nil?
+      raise ArgumentError, "There are no async indexing services configured. Please configure at least one service or pass the service name as an argument."
     end
 
-    Worker.new(worker_class, **Esse.config.async_indexing.send(service).worker_options(worker_class).merge(options), service: service)
+    if SERVICES[identifier.to_sym].nil?
+      raise ArgumentError, "Invalid service: #{identifier.inspect}, valid services are: #{SERVICES.keys.join(", ")}"
+    end
+
+    identifier.to_sym
   end
 
   def self.jid
