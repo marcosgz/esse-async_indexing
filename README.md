@@ -233,14 +233,17 @@ require 'esse/async_indexing/active_record'
 
 Now you can use the `async_index_callback` or `async_update_lazy_attribute_callback` in the ActiveRecord models.
 
-```ruby
+```diff
 class City < ApplicationRecord
-  include Esse::AsyncIndexing::ActiveRecord::Model
+- include Esse::ActiveRecord::Model
++ include Esse::AsyncIndexing::ActiveRecord::Model
 
   belongs_to :state, optional: true
 
-  async_index_callback('geos_index:city') { id }
-  async_update_lazy_attribute_callback('geos_index:state', 'cities_count', if: :state_id?) { state_id }
+- index_callback('geos_index:city') { id }
+- update_lazy_attribute_callback('geos_index:state', 'cities_count', if: :state_id?) { state_id }
++ async_index_callback('geos_index:city', service_name: :sidekiq) { id }
++ async_update_lazy_attribute_callback('geos_index:state', 'cities_count', if: :state_id?, service_name: :sidekiq) { state_id }
 end
 ```
 
