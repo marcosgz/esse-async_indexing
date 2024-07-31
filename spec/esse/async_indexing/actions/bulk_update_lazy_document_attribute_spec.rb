@@ -40,23 +40,23 @@ RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdateLazyDocumentAttribute do
         expect(GeosIndex).to esse_receive_request(:bulk).with(
           index: GeosIndex.index_name,
           body: city_ids.map do |id|
-            {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
+            {update: {_id: id, data: {doc: {total_neighborhoods: 10}}}}
           end
         ).and_return("items" => [])
 
-        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id)).to eq(["1"])
+        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id)).to eq([1])
       end
 
       it "imports all documents for the batch_id with options" do
         expect(GeosIndex).to esse_receive_request(:bulk).with(
           index: GeosIndex.index_name(suffix: "2024"),
           body: city_ids.map do |id|
-            {update: {_id: id.to_s, data: {doc: {total_neighborhoods: 10}}}}
+            {update: {_id: id, data: {doc: {total_neighborhoods: 10}}}}
           end,
           refresh: true
         ).and_return("items" => [])
 
-        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id, suffix: "2024", refresh: true)).to eq(["1"])
+        expect(described_class.call("GeosIndex", "city", "total_neighborhoods", batch_id, suffix: "2024", refresh: true)).to eq([1])
       end
     end
   end
