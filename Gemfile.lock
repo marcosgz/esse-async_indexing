@@ -3,7 +3,7 @@ PATH
   specs:
     esse-async_indexing (0.0.1)
       esse (>= 0.3.4)
-      esse-redis_storage (>= 0.0.2)
+      esse-redis_storage (>= 0.1.0)
       multi_json
 
 GEM
@@ -44,8 +44,9 @@ GEM
     esse-active_record (0.3.5)
       activerecord (>= 4.2, < 8)
       esse (>= 0.3.0)
-    esse-redis_storage (0.0.2)
-      esse (>= 0.2.4)
+    esse-redis_storage (0.1.0)
+      esse (>= 0.3.2)
+      multi_json (>= 1.0.0)
       redis (>= 4.0.0)
     esse-rspec (0.0.6)
       esse (>= 0.2.4)
