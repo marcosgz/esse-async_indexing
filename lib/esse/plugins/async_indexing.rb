@@ -9,28 +9,28 @@ module Esse
             unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
               batch_id = Esse::RedisStorage::Queue.for(repo: repo).enqueue(values: ids)
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, batch_id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
           index: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
           update: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
           delete: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           }

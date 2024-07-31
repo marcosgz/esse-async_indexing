@@ -37,7 +37,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for", :async_i
 
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :import, ids: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:import).call(**kwargs)
-      expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", "batch_id", {suffix: "foo"})
+      expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", "batch_id", {"suffix" => "foo"})
     end
 
     it "does not enqueue the job if the ids are empty" do
@@ -82,7 +82,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for", :async_i
       expect(GeosIndex::State.async_indexing_job_for(:index)).to be_a(Proc)
       GeosIndex::State.async_indexing_job_for(:index).call(**kwargs)
 
-      expect("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {suffix: "foo"})
+      expect("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {"suffix" => "foo"})
     end
 
     it "does not enqueue the job if the id is nil" do
@@ -125,7 +125,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for", :async_i
       expect(GeosIndex::State.async_indexing_job_for(:update)).to be_a(Proc)
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :update, id: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:update).call(**kwargs)
-      expect("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {suffix: "foo"})
+      expect("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {"suffix" => "foo"})
     end
 
     it "does not enqueue the job if the id is nil" do
@@ -168,7 +168,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for", :async_i
       expect(GeosIndex::State.async_indexing_job_for(:delete)).to be_a(Proc)
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :delete, id: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:delete).call(**kwargs)
-      expect("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {suffix: "foo"})
+      expect("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob").to have_enqueued_async_indexing_job("GeosIndex", "state", 1, {"suffix" => "foo"})
     end
 
     it "does not enqueue the job if the id is nil" do

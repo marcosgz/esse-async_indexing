@@ -16,7 +16,7 @@ class Esse::AsyncIndexing::Jobs::ImportBatchIdJob
       queue = Esse::RedisStorage::Queue.for(repo: repo_class, attribute_name: attr_name)
       queue.enqueue(id: batch_id, values: ids)
       Esse::AsyncIndexing.worker(LAZY_ATTR_WORKER, service: self.class.bg_worker_options[:service])
-        .with_args(index_class_name, repo_name, attr_name.to_s, batch_id, options)
+        .with_args(index_class_name, repo_name, attr_name.to_s, batch_id, Esse::HashUtils.deep_transform_keys(options, &:to_s))
         .push
     end
     total
