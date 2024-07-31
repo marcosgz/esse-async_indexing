@@ -46,13 +46,13 @@ RSpec.describe Esse::AsyncIndexing::Jobs::ImportBatchIdJob do
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'eager_include_document_attributes' option is set to true" do
-        expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, "eager_include_document_attributes" => true).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, {"eager_include_document_attributes" => true}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, "eager_include_document_attributes" => true)
         expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'lazy_update_document_attributes' option is set to true" do
-        expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => true).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::ImportBatchId).to receive(:call).with("GeosIndex", "city", batch_id, {"lazy_update_document_attributes" => true}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", batch_id, "lazy_update_document_attributes" => true)
         expect("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").not_to have_enqueued_async_indexing_job
       end

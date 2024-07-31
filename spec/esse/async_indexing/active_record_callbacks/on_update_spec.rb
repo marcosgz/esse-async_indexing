@@ -15,8 +15,8 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnUpdate do
     stub_esse_index(:posts) do
       plugin :async_indexing
       repository :post, const: true do
-        async_indexing_job(:index) { |service, repo, op, id, **kwargs| Thread.current[:custom_job] = [service, repo, op, id, kwargs] }
-        async_indexing_job(:update) { |service, repo, op, id, **kwargs| Thread.current[:custom_job] = [service, repo, op, id, kwargs] }
+        async_indexing_job(:index) { |**kwargs| (Thread.current[:custom_job] ||= []) << kwargs }
+        async_indexing_job(:update) { |**kwargs| (Thread.current[:custom_job] ||= []) << kwargs }
       end
     end
   end
@@ -30,7 +30,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnUpdate do
 
     it "calls the async indexing job" do
       expect(callback.call(model)).to be(true)
-      expect(Thread.current[:custom_job]).to eq([:service, PostsIndex.repo(:post), :index, 1, {}])
+      expect(Thread.current[:custom_job]).to eq([service: :service, repo: PostsIndex.repo(:post), operation: :index, id: 1])
     end
 
     context "when with is update" do
@@ -40,7 +40,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnUpdate do
 
       it "calls the async indexing job with update" do
         expect(callback.call(model)).to be(true)
-        expect(Thread.current[:custom_job]).to eq([:service, PostsIndex.repo(:post), :update, 1, {}])
+        expect(Thread.current[:custom_job]).to eq([service: :service, repo: PostsIndex.repo(:post), operation: :update, id: 1])
       end
     end
 
@@ -51,7 +51,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnUpdate do
 
       it "calls the async indexing job with index" do
         expect(callback.call(model)).to be(true)
-        expect(Thread.current[:custom_job]).to eq([:service, PostsIndex.repo(:post), :index, 1, {}])
+        expect(Thread.current[:custom_job]).to eq([service: :service, repo: PostsIndex.repo(:post), operation: :index, id: 1])
       end
     end
   end

@@ -211,10 +211,10 @@ class GeosIndex < Esse::Index
   repository :city do
     collection Collections::CityCollection
     document Documents::CityDocument
-    async_indexing_job(:import) do |_service_name, _repo_class, _operation_name, ids, **kwargs|
+    async_indexing_job(:import) do |service:, repo:, operation:, ids:, **kwargs|
       GeosCityImportJob.perform_later(ids, **kwargs)
     end
-    async_indexing_job(:index, :update, :delete)  do |_service_name, _repo_class, _operation_name, id, **kwargs|
+    async_indexing_job(:index, :update, :delete)  do |service:, repo:, operation:, id:, **kwargs|
       GeosCityUpsertJob.perform_later(id, **kwargs)
     end
   end

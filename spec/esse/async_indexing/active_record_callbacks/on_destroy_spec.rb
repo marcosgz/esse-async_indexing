@@ -15,7 +15,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnDestroy do
     stub_esse_index(:posts) do
       plugin :async_indexing
       repository :post, const: true do
-        async_indexing_job(:delete) { |service, repo, op, id, **kwargs| Thread.current[:custom_job] = [service, repo, op, id, kwargs] }
+        async_indexing_job(:delete) { |**kwargs| (Thread.current[:custom_job] ||= []) << kwargs }
       end
     end
   end
@@ -29,7 +29,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::OnDestroy do
 
     it "calls the async indexing job" do
       expect(callback.call(model)).to be(true)
-      expect(Thread.current[:custom_job]).to eq([:service, PostsIndex.repo(:post), :delete, 1, {}])
+      expect(Thread.current[:custom_job]).to eq([service: :service, repo: PostsIndex.repo(:post), operation: :delete, id: 1])
     end
   end
 end
