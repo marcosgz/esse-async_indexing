@@ -6,7 +6,7 @@ module Esse::AsyncIndexing::Actions
       _index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
       queue = Esse::RedisStorage::Queue.for(repo: repo_class, attribute_name: attr_name)
 
-      kwargs = options.transform_keys(&:to_sym)
+      kwargs = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
 
       attr_name = repo_class.lazy_document_attributes.keys.find { |key| key.to_s == attr_name.to_s }
       updated_ids = []

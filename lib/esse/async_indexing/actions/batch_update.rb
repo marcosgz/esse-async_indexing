@@ -9,7 +9,7 @@ module Esse::AsyncIndexing::Actions
       return if ids.empty?
 
       index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
-      bulk_opts = options.transform_keys(&:to_sym)
+      bulk_opts = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
       find_opts = {}
       if (context = bulk_opts.delete(:context))
         find_opts.merge!(context)

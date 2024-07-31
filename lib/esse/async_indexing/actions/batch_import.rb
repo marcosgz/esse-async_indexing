@@ -7,7 +7,7 @@ module Esse::AsyncIndexing::Actions
       return if ids.empty?
 
       _index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
-      kwargs = options.transform_keys(&:to_sym)
+      kwargs = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
       kwargs[:context] ||= {}
       kwargs[:context][:id] = ids
       repo_class.import(**kwargs)

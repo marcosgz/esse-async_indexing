@@ -7,7 +7,7 @@ module Esse::AsyncIndexing::Actions
       return if docs.empty?
 
       index_class, _repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
-      bulk_opts = options.transform_keys(&:to_sym)
+      bulk_opts = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
       index_class.bulk(**bulk_opts, delete: docs.map(&:to_doc))
       docs.size
     end
