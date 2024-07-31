@@ -53,6 +53,6 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
   end
 
   def service_name
-    (@options[:service] || Esse.config.async_indexing.services.first).to_sym
+    (@options[:service] || Esse.config.async_indexing.services.first)&.to_sym
   end
 end
