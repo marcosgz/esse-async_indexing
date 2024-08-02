@@ -36,6 +36,7 @@ RSpec.describe Esse::AsyncIndexing::Adapters::Faktory, freeze_at: [2020, 7, 2, 1
 
     before do
       Esse.config.async_indexing.faktory.workers = {"DummyFaktoryWorker" => {}}
+      Esse::AsyncIndexing::Testing.disable! # Ensure we are not in testing mode to actually push the job
 
       require "faktory/testing"
       Faktory::Testing.fake!

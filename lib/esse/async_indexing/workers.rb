@@ -6,6 +6,7 @@ module Esse
   module AsyncIndexing
     module Workers
       DEFAULT = {
+        "esse/async_indexing/jobs/bulk_update_lazy_document_attribute_job" => "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob",
         "esse/async_indexing/jobs/document_delete_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob",
         "esse/async_indexing/jobs/document_index_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob",
         "esse/async_indexing/jobs/document_update_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob",

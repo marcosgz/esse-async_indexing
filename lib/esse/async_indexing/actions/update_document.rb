@@ -6,7 +6,7 @@ module Esse::AsyncIndexing::Actions
 
     def self.call(index_class_name, repo_name, document_id, options = {})
       index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
-      bulk_opts = options.transform_keys(&:to_sym)
+      bulk_opts = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
       bulk_opts.delete_if { |k, _| DOC_ARGS.include?(k) }
       find_opts = options.slice(*DOC_ARGS)
 

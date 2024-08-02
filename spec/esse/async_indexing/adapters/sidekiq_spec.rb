@@ -23,6 +23,7 @@ RSpec.describe Esse::AsyncIndexing::Adapters::Sidekiq do
 
   before do
     Esse.config.async_indexing.sidekiq.workers = {"DummyWorker" => {}}
+    Esse::AsyncIndexing::Testing.disable! # Ensure we are not in testing mode to actually push the job
   end
 
   after do

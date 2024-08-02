@@ -98,6 +98,55 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:sidekiq)
         expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").not_to have_enqueued_async_indexing_job.on(:faktory)
       end
+
+      it "allows --lazy-update-document-attributes as a single value" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --lazy-update-document-attributes=foo])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "lazy_update_document_attributes" => ["foo"]).on(:faktory)
+      end
+
+      it "allows --lazy-update-document-attributes as multiple comma separated values" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --lazy-update-document-attributes=foo,bar])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "lazy_update_document_attributes" => %w[foo bar]).on(:faktory)
+      end
+
+      it "allows --eager-include-document-attributes as true" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=true])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "eager_include_document_attributes" => true).on(:faktory)
+      end
+
+      it "allows --eager-include-document-attributes as false" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=false])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", {}).on(:faktory)
+      end
+
+      it "allows --eager-include-document-attributes as a single value" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "eager_include_document_attributes" => ["foo"]).on(:faktory)
+      end
+
+      it "allows --eager-include-document-attributes as multiple comma separated values" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo,bar])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "eager_include_document_attributes" => %w[foo bar]).on(:faktory)
+      end
+
+      it "allows --eager-include-document-attributes and --lazy-update-document-attributes together" do
+        Esse.config.async_indexing.faktory
+        allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
+        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo,bar --lazy-update-document-attributes=baz])
+        expect("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").to have_enqueued_async_indexing_job("CitiesIndex", "city", "batch_id", "eager_include_document_attributes" => %w[foo bar], "lazy_update_document_attributes" => ["baz"]).on(:faktory)
+      end
     end
 
     context "when passing a index with multiple repositories that support async indexing", :async_indexing_job do

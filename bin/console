@@ -2,7 +2,7 @@
 # frozen_string_literal: true
 
 require "bundler/setup"
-require "esse/async-indexing"
+require "esse/async_indexing"
 require "pry"
 
 Pry.start

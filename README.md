@@ -51,6 +51,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
   # or if you are using Faktory
@@ -61,6 +62,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
 end
@@ -177,13 +179,23 @@ Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", servic
 ```
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
-### Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob
+### Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob
 
-Update a lazy attribute of a document from the index using the given ids
+Update a lazy attribute of a document from the index using the given enqueued batch_id.
 
 ```ruby
 batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city), attribute_name: "total_schools").enqueue(values: big_list_of_uuids)
-Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob", service: :sidekiq).with_args("GeosIndex", "city", "total_schools", batch_id, suffix: "20240101")
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob", service: :sidekiq).with_args("GeosIndex", "city", "total_schools", batch_id, suffix: "20240101")
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob
+
+Update a lazy attribute of a document from the index using the given id
+
+```ruby
+Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob", service: :sidekiq).with_args("GeosIndex", "city", "total_schools", [city.id], suffix: "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
@@ -199,10 +211,10 @@ class GeosIndex < Esse::Index
   repository :city do
     collection Collections::CityCollection
     document Documents::CityDocument
-    async_indexing_job(:import) do |_service_name, _repo_class, _operation_name, ids, **kwargs|
+    async_indexing_job(:import) do |service:, repo:, operation:, ids:, **kwargs|
       GeosCityImportJob.perform_later(ids, **kwargs)
     end
-    async_indexing_job(:index, :update, :delete)  do |_service_name, _repo_class, _operation_name, id, **kwargs|
+    async_indexing_job(:index, :update, :delete)  do |service:, repo:, operation:, id:, **kwargs|
       GeosCityUpsertJob.perform_later(id, **kwargs)
     end
   end
@@ -211,13 +223,27 @@ end
 
 ## Extras
 
-You may want to use `async_indexing_callback` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents when the model is created, updated or destroyed. This functionality is provided by the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem.
+You may want to use `async_indexing_callback` or `async_update_lazy_attribute_callback` callbacks along with the ActiveRecord models to automatically index, update, upsert or delete documents or attributes when the model is created, updated or destroyed.
+
+This functionality require the [esse-active_record](https://github.com/marcosgz/esse-active_record) gem to be installed. Then require the `esse/asyn_indexing/active_record` file in the initializer.
 
 ```ruby
-class City < ApplicationRecord
-  include Esse::ActiveRecord::Model
+require 'esse/async_indexing/active_record'
+```
 
-  async_indexing_callback('geos_index:city') { id }
+Now you can use the `async_index_callback` or `async_update_lazy_attribute_callback` in the ActiveRecord models.
+
+```diff
+class City < ApplicationRecord
+- include Esse::ActiveRecord::Model
++ include Esse::AsyncIndexing::ActiveRecord::Model
+
+  belongs_to :state, optional: true
+
+- index_callback('geos_index:city') { id }
+- update_lazy_attribute_callback('geos_index:state', 'cities_count', if: :state_id?) { state_id }
++ async_index_callback('geos_index:city', service_name: :sidekiq) { id }
++ async_update_lazy_attribute_callback('geos_index:state', 'cities_count', if: :state_id?, service_name: :sidekiq) { state_id }
 end
 ```
 

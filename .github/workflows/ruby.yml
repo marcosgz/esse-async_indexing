@@ -10,8 +10,8 @@ jobs:
   test:
     runs-on: ubuntu-latest
     services:
-      async-indexing:
-        image: contribsys/async-indexing:latest
+      faktory:
+        image: contribsys/faktory:latest
         ports:
           - "7419:7419"
           - "7420:7420"

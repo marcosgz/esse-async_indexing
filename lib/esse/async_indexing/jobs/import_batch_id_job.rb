@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 class Esse::AsyncIndexing::Jobs::ImportBatchIdJob
-  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob"
+  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob"
 
   def perform(index_class_name, repo_name, batch_id, options = {})
     total, ids = Esse::AsyncIndexing::Actions::ImportBatchId.call(index_class_name, repo_name, batch_id, options)
 
+    options = Esse::HashUtils.deep_transform_keys(options, &:to_s)
     return total if total.zero?
     return total if lazy_already_imported?(options)
     return total unless self.class.respond_to?(:bg_worker_options)

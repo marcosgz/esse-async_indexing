@@ -6,7 +6,7 @@ module Esse::AsyncIndexing::Actions
       _index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
       queue = Esse::RedisStorage::Queue.for(repo: repo_class)
 
-      kwargs = options.transform_keys(&:to_sym)
+      kwargs = Esse::HashUtils.deep_transform_keys(options, &:to_sym)
       kwargs[:context] ||= {}
       result = 0
       ids_from_batch = []

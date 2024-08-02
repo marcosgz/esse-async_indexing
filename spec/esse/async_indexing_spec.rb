@@ -64,4 +64,28 @@ RSpec.describe Esse::AsyncIndexing do
       expect(described_class.async_indexing_repo?(GeosIndex::County)).to be(true)
     end
   end
+
+  describe ".service_name" do
+    it "raises an error when no service is configured" do
+      expect { described_class.service_name }.to raise_error(ArgumentError, "There are no async indexing services configured. Please configure at least one service or pass the service name as an argument.")
+    end
+
+    it "returns the first service when no identifier is given" do
+      Esse.config.async_indexing.sidekiq
+      expect(described_class.service_name).to eq(:sidekiq)
+      reset_config!
+    end
+
+    it "returns the given service when it is valid" do
+      expect(described_class.service_name(:faktory)).to eq(:faktory)
+    end
+
+    it "works with string identifiers" do
+      expect(described_class.service_name("faktory")).to eq(:faktory)
+    end
+
+    it "raises an error when the given service is invalid" do
+      expect { described_class.service_name(:invalid) }.to raise_error(ArgumentError, "Invalid service: :invalid, valid services are: sidekiq, faktory")
+    end
+  end
 end

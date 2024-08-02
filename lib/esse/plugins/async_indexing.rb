@@ -5,32 +5,32 @@ module Esse
     module AsyncIndexing
       module RepositoryClassMethods
         DEFAULT_ASYNC_INDEXING_JOBS = {
-          import: ->(service, repo, _operation, ids, **kwargs) {
+          import: ->(service:, repo:, operation:, ids:, **kwargs) {
             unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
               batch_id = Esse::RedisStorage::Queue.for(repo: repo).enqueue(values: ids)
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::ImportBatchIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, batch_id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
-          index: ->(service, repo, _operation, id, **kwargs) {
+          index: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
-          update: ->(service, repo, _operation, id, **kwargs) {
+          update: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },
-          delete: ->(service, repo, _operation, id, **kwargs) {
+          delete: ->(service:, repo:, operation:, id:, **kwargs) {
             if id
               Esse::AsyncIndexing.worker("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob", service: service)
-                .with_args(repo.index.name, repo.repo_name, id, kwargs)
+                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           }
@@ -63,11 +63,11 @@ module Esse
 
         # DSL to define custom job enqueueing
         #
-        # async_indexing_job(:import) do |service_name, repository_class, operation_name, id, **kwargs|
-        #   MyCustomJob.perform_later(repository_class.index.name, ids, **kwargs)
+        # async_indexing_job(:import) do |service:, repo:, operation:, ids:, **kwargs|
+        #   MyCustomJob.perform_later(repo.index.name, ids, **kwargs)
         # end
-        # async_indexing_job(:index, :update, :delete) do |service_name, repository_class, operation_name, id, **kwargs|
-        #   MyCustomJob.perform_later(repository_class.index.name, [id], **kwargs)
+        # async_indexing_job(:index, :update, :delete) do |service:, repo:, operation:, id, **kwargs|
+        #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
         # end
         def async_indexing_job(*operations, &block)
           operations = AsyncIndexingJobValidator::OPERATIONS if operations.empty?
@@ -93,16 +93,7 @@ module Esse
             unless block.is_a?(Proc)
               raise ArgumentError, "The block of async_indexing_job must be a callable object"
             end
-            allowed = %i[req opt]
-            if (vals = block.parameters.map(&:first).take(4)).size != 4 ||
-                vals.any? { |val| !allowed.include?(val) }
-              raise ArgumentError, <<~MSG
-                The block of async_indexing_job must have the following signature:
-                async_indexing_job(:import) do |service_name, repository_class, operation_name, id/ids, **kwargs|
-                  # your code here
-                end
-              MSG
-            end
+
             operations.each do |operation|
               next if OPERATIONS.include?(operation)
               raise ArgumentError, format("Unrecognized operation: %<operation>p. Valid operations are: %<valid>p", operation: operation, valid: OPERATIONS)

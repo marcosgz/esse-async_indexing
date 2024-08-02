@@ -28,7 +28,7 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           ->(ids) do
             batch_id = queue.enqueue(values: ids)
             Esse::AsyncIndexing.worker(WORKER_NAME, service: service_name)
-              .with_args(repo.index.name, repo.repo_name, batch_id, bulk_options)
+              .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
               .push
           end
         end
@@ -53,6 +53,6 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
   end
 
   def service_name
-    (@options[:service] || Esse.config.async_indexing.services.first).to_sym
+    (@options[:service] || Esse.config.async_indexing.services.first)&.to_sym
   end
 end
