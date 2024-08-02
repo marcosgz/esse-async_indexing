@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    esse-async_indexing (0.0.1)
+    esse-async_indexing (0.0.2)
       esse (>= 0.3.4)
       esse-redis_storage (>= 0.1.0)
       multi_json
