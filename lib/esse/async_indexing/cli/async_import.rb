@@ -33,7 +33,7 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           end
         end
 
-        repo.batch_ids.each(&enqueuer)
+        repo.batch_ids(**bulk_options.fetch(:context, {})).each(&enqueuer)
       end
     end
   end
