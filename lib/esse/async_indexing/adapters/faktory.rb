@@ -16,6 +16,7 @@ module Esse::AsyncIndexing
           "queue" => @queue,
           "retry" => parse_retry(worker.options[:retry])
         )
+        @payload["reserve_for"] = worker.options[:reserve_for] if worker.options.key?(:reserve_for)
         @payload["created_at"] ||= Time.now.to_f
       end
 

@@ -67,6 +67,25 @@ RSpec.describe Esse::AsyncIndexing::Adapters::Faktory, freeze_at: [2020, 7, 2, 1
       end
     end
 
+    context "with custom reserve_for" do
+      let(:worker_opts) { {reserve_for: 10} }
+
+      it "adds a valid job hash to faktory" do
+        result = push!
+        expect(result).to eq(
+          "args" => worker_args,
+          "jobtype" => worker_class,
+          "jid" => worker_job_id,
+          "created_at" => Time.now.to_datetime.rfc3339(9),
+          "enqueued_at" => Time.now.to_datetime.rfc3339(9),
+          "queue" => "default",
+          "retry" => 25,
+          "reserve_for" => 10
+        )
+        expect(Faktory::Queues["default"].size).to eq(1)
+      end
+    end
+
     context "with a scheduled job" do
       let(:worker_opts) { {queue: "mailer"} }
 
