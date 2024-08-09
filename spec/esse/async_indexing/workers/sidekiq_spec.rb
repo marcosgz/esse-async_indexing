@@ -29,7 +29,7 @@ RSpec.describe "Esse::AsyncIndexing::Workers::Sidekiq" do
       end
     end
 
-    context "with global Sidekiq available" do
+    context "with global Sidekiq < 7 available" do
       let(:worker_module) { Module.new }
       let(:worker) do
         Class.new do
@@ -44,6 +44,49 @@ RSpec.describe "Esse::AsyncIndexing::Workers::Sidekiq" do
       before do
         Object.const_set(:Sidekiq, Class.new do
           def self.default_worker_options
+            {
+              "queue" => "dummy",
+              "retry" => 0
+            }
+          end
+        end)
+        Object.const_get(:Sidekiq).const_set(:Worker, worker_module)
+      end
+
+      after do
+        Object.send(:remove_const, :Sidekiq) # rubocop:disable RSpec/RemoveConst
+        reset_config!
+      end
+
+      specify do
+        expect(worker).to respond_to(:perform_async)
+        expect(worker).to respond_to(:perform_in)
+        expect(worker).to respond_to(:perform_at)
+      end
+
+      specify do
+        expect(worker.service_worker_options).to eq(
+          queue: "dummy",
+          retry: 0
+        )
+      end
+    end
+
+    context "with global Sidekiq >= 7 available" do
+      let(:worker_module) { Module.new }
+      let(:worker) do
+        Class.new do
+          extend Esse::AsyncIndexing::Workers.for(:sidekiq)
+
+          def self.name
+            "DummyWorker"
+          end
+        end
+      end
+
+      before do
+        Object.const_set(:Sidekiq, Class.new do
+          def self.default_job_options
             {
               "queue" => "dummy",
               "retry" => 0
