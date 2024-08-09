@@ -75,11 +75,11 @@ module Esse::AsyncIndexing
       end
 
       def scheduled_queue_name
-        "#{namespace}:schedule"
+        [namespace, "schedule"].compact.join(":")
       end
 
       def immediate_queue_name
-        "#{namespace}:queue:#{queue}"
+        [namespace, "queue", queue].compact.join(":")
       end
 
       def to_json(value)

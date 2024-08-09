@@ -35,8 +35,8 @@ RSpec.describe Esse::AsyncIndexing::Configuration::Sidekiq do
   end
 
   describe "#namespace" do
-    it "returns the default namespace" do
-      expect(described_class.new.namespace).to eq("sidekiq")
+    it "returns nil as the default namespace" do
+      expect(described_class.new.namespace).to be_nil
     end
   end
 
