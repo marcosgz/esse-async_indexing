@@ -2,36 +2,50 @@
 
 module Esse
   module AsyncIndexing
+    class ConfigService < Set
+      def sidekiq?
+        include?(:sidekiq)
+      end
+
+      def faktory?
+        include?(:faktory)
+      end
+    end
+
     class Configuration
-      extend Forwardable
-      def_delegators :bg_job_config, :services
+      def services
+        @services ||= ConfigService.new
+      end
 
       def reset!
-        @faktory = nil
-        @sidekiq = nil
+        @services = nil
         bg_job_config.reset!
       end
 
-      def faktory
-        @faktory ||= bg_job_config.faktory.tap do |config|
-          default_jobs.each { |job_class| config.jobs[job_class] ||= {} }
+      BackgroundJob::SERVICES.each_key do |service|
+        define_method(service) do |&block|
+          config_for(service, &block)
         end
-        yield @faktory if block_given?
-        @faktory
-      end
-
-      def sidekiq
-        @sidekiq ||= bg_job_config.sidekiq.tap do |config|
-          default_jobs.each { |job_class| config.jobs[job_class] ||= {} }
-        end
-        yield @sidekiq if block_given?
-        @sidekiq
       end
 
       def config_for(service)
         case service.to_sym
-        when :faktory then faktory
-        when :sidekiq then sidekiq
+        when :faktory
+          conf = bg_job_config.faktory
+          unless services.faktory?
+            default_jobs.each { |job_class| conf.jobs[job_class] ||= {} }
+            services << :faktory
+          end
+          yield conf if block_given?
+          conf
+        when :sidekiq
+          conf = bg_job_config.sidekiq
+          unless services.sidekiq?
+            default_jobs.each { |job_class| conf.jobs[job_class] ||= {} }
+            services << :sidekiq
+          end
+          yield conf if block_given?
+          conf
         else raise ArgumentError, "Unknown service: #{service}"
         end
       end
