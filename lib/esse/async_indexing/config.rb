@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 
 require_relative "configuration"
-require_relative "configuration/base"
-require_relative "configuration/faktory"
-require_relative "configuration/sidekiq"
 
 module Esse
   module AsyncIndexing

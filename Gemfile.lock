@@ -29,8 +29,7 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.2)
-    background_job (0.0.1.rc1)
-      connection_pool
+    background_job (0.0.1.rc2)
       multi_json
       redis
     base64 (0.2.0)
@@ -154,6 +153,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  background_job
   esse
   esse-active_record (>= 0.3.5)
   esse-async_indexing!

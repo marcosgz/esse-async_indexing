@@ -2,43 +2,48 @@
 
 module Esse
   module AsyncIndexing
-    class ConfigService < Set
-      def sidekiq?
-        include?(:sidekiq)
-      end
-
-      def faktory?
-        include?(:faktory)
-      end
-    end
-
     class Configuration
-      def services
-        @services ||= ConfigService.new
+      extend Forwardable
+      def_delegators :bg_job_config, :services
+
+      def reset!
+        @faktory = nil
+        @sidekiq = nil
+        bg_job_config.reset!
       end
 
       def faktory
-        @faktory ||= begin
-          services.add(:faktory)
-          Configuration::Faktory.new
+        @faktory ||= bg_job_config.faktory.tap do |config|
+          default_jobs.each { |job_class| config.jobs[job_class] ||= {} }
         end
-        if block_given?
-          yield @faktory
-        else
-          @faktory
-        end
+        yield @faktory if block_given?
+        @faktory
       end
 
       def sidekiq
-        @sidekiq ||= begin
-          services.add(:sidekiq)
-          Configuration::Sidekiq.new
+        @sidekiq ||= bg_job_config.sidekiq.tap do |config|
+          default_jobs.each { |job_class| config.jobs[job_class] ||= {} }
         end
-        if block_given?
-          yield @sidekiq
-        else
-          @sidekiq
+        yield @sidekiq if block_given?
+        @sidekiq
+      end
+
+      def config_for(service)
+        case service.to_sym
+        when :faktory then faktory
+        when :sidekiq then sidekiq
+        else raise ArgumentError, "Unknown service: #{service}"
         end
+      end
+
+      private
+
+      def bg_job_config
+        BackgroundJob.config
+      end
+
+      def default_jobs
+        Esse::AsyncIndexing::Jobs::DEFAULT.values
       end
     end
   end
