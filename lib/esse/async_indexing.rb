@@ -35,7 +35,7 @@ module Esse::AsyncIndexing
   end
 
   def self.service_name(identifier = nil)
-    identifier ||= BackgroundJob.config.services.first
+    identifier ||= Esse.config.async_indexing.services.first
     if identifier.nil?
       raise ArgumentError, "There are no async indexing services configured. Please configure at least one service or pass the service name as an argument."
     end
