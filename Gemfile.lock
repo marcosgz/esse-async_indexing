@@ -2,6 +2,7 @@ PATH
   remote: .
   specs:
     esse-async_indexing (0.0.2)
+      background_job
       esse (>= 0.3.4)
       esse-redis_storage (>= 0.1.0)
       multi_json
@@ -28,6 +29,10 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.2)
+    background_job (0.0.1.rc1)
+      connection_pool
+      multi_json
+      redis
     base64 (0.2.0)
     bigdecimal (3.1.8)
     coderay (1.1.3)
