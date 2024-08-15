@@ -14,7 +14,7 @@ module Esse::AsyncIndexing
 
       def call(model)
         if (doc_ids = resolve_document_ids(model))
-          BackgroundJob.send(service_name, LAZY_ATTR_WORKER)
+          BackgroundJob.job(service_name, LAZY_ATTR_WORKER)
             .with_args(repo.index.name, repo.repo_name, attribute_name.to_s, doc_ids, options)
             .push
         end
