@@ -6,6 +6,7 @@ require "forwardable"
 require "securerandom"
 require "time"
 require "multi_json"
+require "background_job"
 
 module Esse
   module AsyncIndexing
@@ -14,32 +15,23 @@ module Esse
 
     module Jobs
     end
-
-    module Workers
-    end
   end
 end
 
 require_relative "async_indexing/version"
 require_relative "async_indexing/actions"
-require_relative "async_indexing/adapters"
 require_relative "async_indexing/config"
 require_relative "async_indexing/errors"
-require_relative "async_indexing/workers"
+require_relative "async_indexing/jobs"
 require_relative "plugins/async_indexing"
 
 module Esse::AsyncIndexing
-  SERVICES = {
-    sidekiq: Adapters::Sidekiq,
-    faktory: Adapters::Faktory
-  }
-
   # @param worker_class [String] The worker class name
   # @param options [Hash] Options that will be passed along to the worker instance
   # @return [Esse::AsyncIndexing::Worker] An instance of worker
-  def self.worker(worker_class, service: nil, **options)
+  def self.worker(worker_class, service:, **options)
     serv_name = service_name(service)
-    Worker.new(worker_class, **Esse.config.async_indexing.send(service).worker_options(worker_class).merge(options), service: serv_name)
+    BackgroundJob.job(serv_name, worker_class, **options)
   end
 
   def self.service_name(identifier = nil)
@@ -47,16 +39,11 @@ module Esse::AsyncIndexing
     if identifier.nil?
       raise ArgumentError, "There are no async indexing services configured. Please configure at least one service or pass the service name as an argument."
     end
-
-    if SERVICES[identifier.to_sym].nil?
-      raise ArgumentError, "Invalid service: #{identifier.inspect}, valid services are: #{SERVICES.keys.join(", ")}"
+    unless (services = BackgroundJob::SERVICES).key?(identifier.to_sym)
+      raise ArgumentError, "Invalid service: #{identifier.inspect}, valid services are: #{services.keys.join(", ")}"
     end
 
     identifier.to_sym
-  end
-
-  def self.jid
-    SecureRandom.hex(12)
   end
 
   def self.async_indexing_repo?(repo)
@@ -67,6 +54,7 @@ module Esse::AsyncIndexing
 end
 
 Esse::Config.__send__ :include, Esse::AsyncIndexing::Config
+
 if defined?(Esse::CLI)
   require_relative "async_indexing/cli"
 end

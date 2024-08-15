@@ -27,7 +27,7 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           queue = Esse::RedisStorage::Queue.for(repo: repo)
           ->(ids) do
             batch_id = queue.enqueue(values: ids)
-            Esse::AsyncIndexing.worker(WORKER_NAME, service: service_name)
+            BackgroundJob.job(service_name, WORKER_NAME)
               .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
               .push
           end

@@ -17,28 +17,47 @@ module Esse
         @services ||= ConfigService.new
       end
 
-      def faktory
-        @faktory ||= begin
-          services.add(:faktory)
-          Configuration::Faktory.new
-        end
-        if block_given?
-          yield @faktory
-        else
-          @faktory
+      def reset!
+        @services = nil
+        bg_job_config.reset!
+      end
+
+      BackgroundJob::SERVICES.each_key do |service|
+        define_method(service) do |&block|
+          config_for(service, &block)
         end
       end
 
-      def sidekiq
-        @sidekiq ||= begin
-          services.add(:sidekiq)
-          Configuration::Sidekiq.new
+      def config_for(service)
+        case service.to_sym
+        when :faktory
+          conf = bg_job_config.faktory
+          unless services.faktory?
+            default_jobs.each { |job_class| conf.jobs[job_class] ||= {} }
+            services << :faktory
+          end
+          yield conf if block_given?
+          conf
+        when :sidekiq
+          conf = bg_job_config.sidekiq
+          unless services.sidekiq?
+            default_jobs.each { |job_class| conf.jobs[job_class] ||= {} }
+            services << :sidekiq
+          end
+          yield conf if block_given?
+          conf
+        else raise ArgumentError, "Unknown service: #{service}"
         end
-        if block_given?
-          yield @sidekiq
-        else
-          @sidekiq
-        end
+      end
+
+      private
+
+      def bg_job_config
+        BackgroundJob.config
+      end
+
+      def default_jobs
+        Esse::AsyncIndexing::Jobs::DEFAULT.values
       end
     end
   end

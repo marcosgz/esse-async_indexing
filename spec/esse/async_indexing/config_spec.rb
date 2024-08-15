@@ -14,7 +14,7 @@ RSpec.describe Esse::AsyncIndexing::Config do
 
     it "yields the configuration" do
       Esse.config.async_indexing do |config|
-        expect(config).to be_a(Esse::AsyncIndexing::Configuration)
+        expect(config).to be_an_instance_of(Esse::AsyncIndexing::Configuration)
       end
     end
   end

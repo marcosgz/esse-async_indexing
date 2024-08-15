@@ -5,7 +5,6 @@ require "pry"
 require "opensearch-ruby"
 require "esse/rspec"
 require "esse/async_indexing"
-require "esse/async_indexing/testing"
 require "support/hooks/timecop"
 require "support/hooks/have_enqueued_faktory_job"
 require "support/webmock"
@@ -24,7 +23,7 @@ RSpec.configure do |config|
   config.include Hooks::Timecop
 
   def reset_config!
-    Esse.instance_variable_set(:@config, nil)
+    Esse.config.async_indexing.reset!
   end
 
   def setup_esse_client!

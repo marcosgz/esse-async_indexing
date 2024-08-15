@@ -6,7 +6,7 @@ require "esse/async_indexing/active_record"
 
 # rubocop:disable RSpec/VerifiedDoubles
 # rubocop:disable RSpec/ExpectActual
-RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute, :async_indexing_job do
+RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute do
   before do
     setup_esse_client!
     stub_esse_index(:geos) do
@@ -18,6 +18,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute, 
         end
       end
     end
+    Esse.config.async_indexing.faktory
   end
 
   let(:callback) do
@@ -34,7 +35,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute, 
     it "calls the async indexing job" do
       expect(callback.call(model)).to be(true)
 
-      expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job(
+      expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
         "GeosIndex", "city", "total_neighborhoods", [1], {}
       )
     end
@@ -46,7 +47,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute, 
         callback.instance_variable_set(:@block_result, block_result)
         expect(callback.call(model)).to be(true)
 
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job(
+        expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
           "GeosIndex", "city", "total_neighborhoods", [{"id" => 1}], {}
         )
       end
@@ -59,7 +60,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute, 
         callback.instance_variable_set(:@block_result, block_result)
         expect(callback.call(model)).to be(true)
 
-        expect("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").to have_enqueued_async_indexing_job(
+        expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
           "GeosIndex", "city", "total_neighborhoods", [1, 2], {}
         )
       end

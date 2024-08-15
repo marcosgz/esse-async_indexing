@@ -14,8 +14,8 @@ module Esse::AsyncIndexing
 
       def call(model)
         if (doc_ids = resolve_document_ids(model))
-          Esse::AsyncIndexing.worker(LAZY_ATTR_WORKER, service: service_name)
-            .with_args(repo.index.name, repo.repo_name, attribute_name.to_s, doc_ids, Esse::HashUtils.deep_transform_keys(options, &:to_s))
+          BackgroundJob.job(service_name, LAZY_ATTR_WORKER)
+            .with_args(repo.index.name, repo.repo_name, attribute_name.to_s, doc_ids, options)
             .push
         end
 
