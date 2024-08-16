@@ -14,16 +14,15 @@ Esse::CLI::Index.class_eval do
   option :context, type: :hash, default: {}, required: true, desc: "List of options to pass to the index class"
   option :service, type: :string, default: nil, alias: "-s", desc: "Service to use for async import: sidekiq, faktory"
   option :eager_load_lazy_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to include to the bulk index request. Or pass `true` to include all lazy attributes"
-  option :lazy_update_document_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to bulk update after the bulk index request Or pass `true` to include all lazy attributes"
+  option :update_lazy_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to bulk update after the bulk index request Or pass `true` to include all lazy attributes"
   option :enqueue_lazy_attributes, type: :boolean, default: nil, desc: "Enqueue the lazy document attributes job after the bulk import. (default: true))"
   def async_import(*index_classes)
     opts = Esse::HashUtils.deep_transform_keys(options.to_h, &:to_sym)
     opts[:service] ||= Esse.config.async_indexing.services.first
-    opts.delete(:lazy_update_document_attributes) if opts[:lazy_update_document_attributes] == "false"
     if (val = opts.delete(:eager_load_lazy_attributes)) && val != "false"
       opts[:eager_include_document_attributes] = (val == "true") ? true : val.split(",")
     end
-    if (val = opts[:lazy_update_document_attributes])
+    if (val = opts.delete(:update_lazy_attributes)) && val != "false"
       opts[:lazy_update_document_attributes] = (val == "true") ? true : val.split(",")
     end
     require "esse/async_indexing/cli/async_import"
