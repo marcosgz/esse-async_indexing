@@ -112,9 +112,9 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "lazy_update_document_attributes" => %w[foo bar]).on(:faktory)
       end
 
-      it "allows --eager-include-document-attributes as true" do
+      it "allows --eager-load-lazy-attributes as true" do
         Esse.config.async_indexing.faktory
-        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=true])
+        cli_exec(%w[index async_import CitiesIndex --eager-load-lazy-attributes=true])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_include_document_attributes" => true).on(:faktory)
       end
 
@@ -124,27 +124,27 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "enqueue_lazy_attributes" => false).on(:faktory)
       end
 
-      it "allows --eager-include-document-attributes as false" do
+      it "allows --eager-load-lazy-attributes as false" do
         Esse.config.async_indexing.faktory
-        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=false])
+        cli_exec(%w[index async_import CitiesIndex --eager-load-lazy-attributes=false])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], {}).on(:faktory)
       end
 
-      it "allows --eager-include-document-attributes as a single value" do
+      it "allows --eager-load-lazy-attributes as a single value" do
         Esse.config.async_indexing.faktory
-        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo])
+        cli_exec(%w[index async_import CitiesIndex --eager-load-lazy-attributes=foo])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_include_document_attributes" => ["foo"]).on(:faktory)
       end
 
-      it "allows --eager-include-document-attributes as multiple comma separated values" do
+      it "allows --eager-load-lazy-attributes as multiple comma separated values" do
         Esse.config.async_indexing.faktory
-        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo,bar])
+        cli_exec(%w[index async_import CitiesIndex --eager-load-lazy-attributes=foo,bar])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_include_document_attributes" => %w[foo bar]).on(:faktory)
       end
 
-      it "allows --eager-include-document-attributes and --lazy-update-document-attributes together" do
+      it "allows --eager-load-lazy-attributes and --lazy-update-document-attributes together" do
         Esse.config.async_indexing.faktory
-        cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=foo,bar --lazy-update-document-attributes=baz])
+        cli_exec(%w[index async_import CitiesIndex --eager-load-lazy-attributes=foo,bar --lazy-update-document-attributes=baz])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_include_document_attributes" => %w[foo bar], "lazy_update_document_attributes" => ["baz"]).on(:faktory)
       end
     end
