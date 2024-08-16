@@ -44,28 +44,28 @@ Optional worker configuration:
 
 ```ruby
 Esse.configure do |config|
-  config.async_indexing.sidekiq.workers = {
+  config.async_indexing.sidekiq.jobs = {
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing" },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "batch_indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
-    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: false },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 2 },
   }
   # or if you are using Faktory
-  config.async_indexing.faktory.workers = {
+  config.async_indexing.faktory.jobs = {
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing" },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "batch_indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
-    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: false },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing" },
+    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 2 },
   }
 end
 ```
@@ -109,9 +109,9 @@ $ bundle exec esse index async_import GeosIndex --suffix="20240101" --service="s
 
 ## Workers/Jobs
 
-The gem provides a few jobs to index, update, upsert and delete document or batch of documents with given ids. The sidekiq or faktory worker does not need to live in the same application that enqueues the job. The worker can be in a separate application that only runs the worker process. This gem has its own DSL to push jobs.
+The gem provides a few jobs to index, update, upsert and delete document or batch of documents with given ids. The sidekiq or faktory job does not need to live in the same application that enqueues the job. The job can be in a separate application that only runs the job process. This gem has its own DSL to push jobs.
 
-But for make sure to require the jobs in the worker application by calling `install!`
+But for make sure to require the jobs in the job application by calling `install!`
 
 ```ruby
 Esse::AsyncIndexing::Jobs.install!(:faktory)
