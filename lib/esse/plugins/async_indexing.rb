@@ -39,12 +39,19 @@ module Esse
         # It's used to asynchronously index the documents.
         # The #each_batch_ids method is optional and should be implemented by the collection class.
         #
+        # @yield [batch] Yields each batch of ids
         # @return [Enumerator] The enumerator
-        def batch_ids(*args, **kwargs, &block)
+        def batch_ids(*args, **kwargs)
           if implement_batch_ids?
-            Enumerator.new do |yielder|
+            if block_given?
               @collection_proc.new(*args, **kwargs).each_batch_ids do |batch|
-                yielder.yield(batch)
+                yield(batch)
+              end
+            else
+              Enumerator.new do |yielder|
+                @collection_proc.new(*args, **kwargs).each_batch_ids do |batch|
+                  yielder.yield(batch)
+                end
               end
             end
           else
