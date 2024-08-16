@@ -35,7 +35,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute d
     it "calls the async indexing job" do
       expect(callback.call(model)).to be(true)
 
-      expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
+      expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" }.to have_enqueued_background_job(
         "GeosIndex", "city", "total_neighborhoods", [1], {}
       )
     end
@@ -47,7 +47,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute d
         callback.instance_variable_set(:@block_result, block_result)
         expect(callback.call(model)).to be(true)
 
-        expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
+        expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" }.to have_enqueued_background_job(
           "GeosIndex", "city", "total_neighborhoods", [{"id" => 1}], {}
         )
       end
@@ -60,7 +60,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute d
         callback.instance_variable_set(:@block_result, block_result)
         expect(callback.call(model)).to be(true)
 
-        expect { "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job(
+        expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" }.to have_enqueued_background_job(
           "GeosIndex", "city", "total_neighborhoods", [1, 2], {}
         )
       end

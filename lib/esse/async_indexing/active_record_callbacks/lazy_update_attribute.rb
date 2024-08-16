@@ -3,7 +3,7 @@
 module Esse::AsyncIndexing
   module ActiveRecordCallbacks
     class LazyUpdateAttribute < Callback
-      LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob"
+      LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob"
 
       attr_reader :attribute_name
 

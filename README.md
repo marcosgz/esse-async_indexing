@@ -53,7 +53,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
     "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "indexing" },
   }
   # or if you are using Faktory
   config.async_indexing.faktory.workers = {
@@ -65,7 +65,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
     "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob" => { queue: "indexing" },
   }
 end
 ```
@@ -202,12 +202,12 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchId
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
-### Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob
+### Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob
 
 Update a lazy attribute of a document from the index using the given id
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", [city.id], "suffix" => "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob").with_args("GeosIndex", "city", "total_schools", [city.id], "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
