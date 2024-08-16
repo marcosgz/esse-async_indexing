@@ -118,6 +118,12 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_include_document_attributes" => true).on(:faktory)
       end
 
+      it "allows --no-enqueue-lazy-attributes" do
+        Esse.config.async_indexing.faktory
+        cli_exec(%w[index async_import CitiesIndex --no-enqueue-lazy-attributes])
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "enqueue_lazy_attributes" => false).on(:faktory)
+      end
+
       it "allows --eager-include-document-attributes as false" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --eager-include-document-attributes=false])

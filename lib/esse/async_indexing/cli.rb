@@ -15,6 +15,7 @@ Esse::CLI::Index.class_eval do
   option :service, type: :string, default: nil, alias: "-s", desc: "Service to use for async import: sidekiq, faktory"
   option :eager_include_document_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to include to the bulk index request. Or pass `true` to include all lazy attributes"
   option :lazy_update_document_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to bulk update after the bulk index request Or pass `true` to include all lazy attributes"
+  option :enqueue_lazy_attributes, type: :boolean, default: nil, desc: "Enqueue the lazy document attributes job after the bulk import. (default: true))"
   def async_import(*index_classes)
     opts = Esse::HashUtils.deep_transform_keys(options.to_h, &:to_sym)
     opts[:service] ||= Esse.config.async_indexing.services.first
