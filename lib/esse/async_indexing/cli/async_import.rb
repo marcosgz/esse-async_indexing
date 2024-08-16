@@ -3,7 +3,7 @@
 require "esse/cli/index/base_operation"
 
 class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
-  WORKER_NAME = "Esse::AsyncIndexing::Jobs::ImportBatchIdJob"
+  WORKER_NAME = "Esse::AsyncIndexing::Jobs::ImportIdsJob"
 
   def run
     validate_options!
@@ -24,11 +24,9 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
         enqueuer = if (caller = repo.async_indexing_jobs[:import])
           ->(ids) { caller.call(service_name, repo, :import, ids, **bulk_options) }
         else
-          queue = Esse::RedisStorage::Queue.for(repo: repo)
           ->(ids) do
-            batch_id = queue.enqueue(values: ids)
             BackgroundJob.job(service_name, WORKER_NAME)
-              .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
+              .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
               .push
           end
         end

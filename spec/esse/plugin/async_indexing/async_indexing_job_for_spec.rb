@@ -28,7 +28,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
       expect {
         GeosIndex::State.async_indexing_job_for(:import).call(**kwargs)
       }.to change { Thread.current[:custom_job] }.from(nil).to([kwargs])
-      expect { "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" }.not_to have_enqueued_background_job
+      expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.not_to have_enqueued_background_job
     end
 
     it "returns the default async_indexing_job implementation" do
@@ -37,12 +37,11 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
         repository :state, const: true
       end
 
-      allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
       expect(GeosIndex::State.async_indexing_job_for(:import)).to be_a(Proc)
 
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :import, ids: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:import).call(**kwargs)
-      expect { "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" }.to have_enqueued_background_job("GeosIndex", "state", "batch_id", {"suffix" => "foo"})
+      expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "state", [1], {"suffix" => "foo"})
     end
 
     it "does not enqueue the job if the ids are empty" do
@@ -55,7 +54,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :import, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:import).call(**kwargs, ids: [])
       GeosIndex::State.async_indexing_job_for(:import).call(**kwargs, ids: nil)
-      expect { "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" }.not_to have_enqueued_background_job
+      expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.not_to have_enqueued_background_job
     end
   end
 
@@ -82,7 +81,6 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
         repository :state, const: true
       end
 
-      allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :index, id: 1, suffix: "foo"}
       expect(GeosIndex::State.async_indexing_job_for(:index)).to be_a(Proc)
       GeosIndex::State.async_indexing_job_for(:index).call(**kwargs)
@@ -126,7 +124,6 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
         repository :state, const: true
       end
 
-      allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
       expect(GeosIndex::State.async_indexing_job_for(:update)).to be_a(Proc)
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :update, id: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:update).call(**kwargs)
@@ -169,7 +166,6 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
         repository :state, const: true
       end
 
-      allow_any_instance_of(Esse::RedisStorage::Queue).to receive(:enqueue).and_return("batch_id")
       expect(GeosIndex::State.async_indexing_job_for(:delete)).to be_a(Proc)
       kwargs = {service: :faktory, repo: GeosIndex::State, operation: :delete, id: 1, suffix: "foo"}
       GeosIndex::State.async_indexing_job_for(:delete).call(**kwargs)

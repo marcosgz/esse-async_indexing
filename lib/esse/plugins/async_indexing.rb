@@ -7,9 +7,8 @@ module Esse
         DEFAULT_ASYNC_INDEXING_JOBS = {
           import: ->(service:, repo:, operation:, ids:, **kwargs) {
             unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
-              batch_id = Esse::RedisStorage::Queue.for(repo: repo).enqueue(values: ids)
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::ImportBatchIdJob")
-                .with_args(repo.index.name, repo.repo_name, batch_id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
+              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::ImportIdsJob")
+                .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
           },

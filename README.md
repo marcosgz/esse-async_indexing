@@ -50,7 +50,8 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
     "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
@@ -61,7 +62,8 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob" => { queue: "indexing" },
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
-    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
     "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
@@ -122,7 +124,7 @@ Esse::AsyncIndexing::Jobs.install!(:sidekiq)
 Fetch a document from `GeosIndex.repo(:city)` collection using the given id and index it
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob").with_args("GeosIndex", "city", city.id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob").with_args("GeosIndex", "city", city.id, "suffix" => "20240101")
 .push
 ```
 
@@ -133,7 +135,7 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob").with_ar
 Fetch a document from `GeosIndex.repo(:city)` collection using the given id and update it
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob").with_args("GeosIndex", "city", city.id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob").with_args("GeosIndex", "city", city.id, "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
@@ -143,7 +145,7 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob").with_a
 Fetch a document from `GeosIndex.repo(:city)` collection using the given id and upsert it
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob").with_args("GeosIndex", "city", city.id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob").with_args("GeosIndex", "city", city.id, "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
@@ -154,7 +156,7 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob").with_a
 Delete a document from the index using the given id
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob").with_args("GeosIndex", "city", city.id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob").with_args("GeosIndex", "city", city.id, "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
@@ -164,10 +166,20 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob").with_a
 Import all documents from the `GeosIndex.repo(:city)` collection where `state_abbr` is "IL"
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportAllJob").with_args("GeosIndex", "city", context: {state_abbr: "IL"}, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportAllJob").with_args("GeosIndex", "city", "context" => { "state_abbr" => "IL"}, "suffix" => "20240101")
 ```
 
 **Note:** Suffix and import context are optional, just an example of how to pass additional arguments to the job.
+
+### Esse::AsyncIndexing::Jobs::ImportIdsJob
+
+Import a batch of documents from the `GeosIndex.repo(:city)` collection using the given ids
+
+```ruby
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportIdsJob").with_args("GeosIndex", "city", city_ids, "suffix" => "20240101")
+```
+
+**Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
 ### Esse::AsyncIndexing::Jobs::ImportBatchIdJob
 
@@ -175,7 +187,7 @@ Import a batch of documents from the `GeosIndex.repo(:city)` collection using a 
 
 ```ruby
 batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city)).enqueue(values: big_list_of_uuids)
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").with_args("GeosIndex", "city", batch_id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").with_args("GeosIndex", "city", batch_id, "suffix" => "20240101")
 ```
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
@@ -185,7 +197,7 @@ Update a lazy attribute of a document from the index using the given enqueued ba
 
 ```ruby
 batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city), attribute_name: "total_schools").enqueue(values: big_list_of_uuids)
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", batch_id, suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", batch_id, "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
@@ -195,7 +207,7 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttribut
 Update a lazy attribute of a document from the index using the given id
 
 ```ruby
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", [city.id], suffix: "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", [city.id], "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
