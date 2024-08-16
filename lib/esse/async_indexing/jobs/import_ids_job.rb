@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class Esse::AsyncIndexing::Jobs::ImportIdsJob
-  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob"
+  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob"
 
   def perform(index_class_name, repo_name, ids, options = {})
     # This is specific to the AsyncIndexing plugin, can't pass to Esse import method
