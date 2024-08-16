@@ -2,7 +2,7 @@
 
 require "spec_helper"
 
-RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdateLazyDocumentAttribute do
+RSpec.describe Esse::AsyncIndexing::Actions::UpdateLazyAttributeBatchId do
   before do
     setup_esse_client!
     stub_esse_index(:geos) do

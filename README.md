@@ -52,7 +52,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
   # or if you are using Faktory
@@ -64,7 +64,7 @@ Esse.configure do |config|
     "Esse::AsyncIndexing::Jobs::ImportAllJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportIdsJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::ImportBatchIdJob" => { queue: "batch_indexing", retry: 3 }, # This is only if you want to use esse-redis_storage to store ids
-    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" => { queue: "batch_indexing", retry: 3 },
+    "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob" => { queue: "batch_indexing", retry: 3 },
     "Esse::AsyncIndexing::Jobs::UpdateLazyDocumentAttributeJob" => { queue: "indexing" },
   }
 end
@@ -191,13 +191,13 @@ BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::ImportBatchIdJob").with_args("
 ```
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.
 
-### Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob
+### Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob
 
 Update a lazy attribute of a document from the index using the given enqueued batch_id.
 
 ```ruby
 batch_id = Esse::RedisStorage::Queue.for(repo: GeosIndex.repo(:city), attribute_name: "total_schools").enqueue(values: big_list_of_uuids)
-BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob").with_args("GeosIndex", "city", "total_schools", batch_id, "suffix" => "20240101")
+BackgroundJob.sidekiq("Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob").with_args("GeosIndex", "city", "total_schools", batch_id, "suffix" => "20240101")
 ```
 
 **Note:** Suffix is optional, just an example of how to pass additional arguments to the job.

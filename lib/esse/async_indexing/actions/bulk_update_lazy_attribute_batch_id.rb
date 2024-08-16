@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Esse::AsyncIndexing::Actions
-  class BulkUpdateLazyDocumentAttribute
+  class UpdateLazyAttributeBatchId
     def self.call(index_class_name, repo_name, attr_name, batch_id, options = {})
       _index_class, repo_class = CoerceIndexRepository.call(index_class_name, repo_name)
       queue = Esse::RedisStorage::Queue.for(repo: repo_class, attribute_name: attr_name)
