@@ -8,7 +8,7 @@ class Esse::AsyncIndexing::Jobs::ImportIdsJob
     enqueue_lazy = options.delete(:enqueue_lazy_attributes) if options.key?(:enqueue_lazy_attributes)
     enqueue_lazy = options.delete("enqueue_lazy_attributes") if options.key?("enqueue_lazy_attributes")
     enqueue_lazy = true if enqueue_lazy.nil?
-    total = Esse::AsyncIndexing::Actions::BatchImport.call(index_class_name, repo_name, ids, options)
+    total = Esse::AsyncIndexing::Actions::BulkImport.call(index_class_name, repo_name, ids, options)
     options = Esse::HashUtils.deep_transform_keys(options, &:to_s)
 
     return total if total.zero?

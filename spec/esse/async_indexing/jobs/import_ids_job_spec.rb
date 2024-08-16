@@ -26,7 +26,7 @@ RSpec.describe Esse::AsyncIndexing::Jobs::ImportIdsJob do
     let(:ids) { [1, 2] }
 
     it "calls Esse::AsyncIndexing::Actions::UpsertDocument.call" do
-      expect(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).with("VenuesIndex", "venue", ids, {}).and_return(2)
+      expect(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).with("VenuesIndex", "venue", ids, {}).and_return(2)
       desc_class.new.perform("VenuesIndex", "venue", ids, {})
     end
 
@@ -44,31 +44,31 @@ RSpec.describe Esse::AsyncIndexing::Jobs::ImportIdsJob do
       end
 
       it "does not enqueue the lazy_document_attributes job when the job does no implement background_job_service" do
-        expect(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).with("GeosIndex", "city", ids, {}).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).with("GeosIndex", "city", ids, {}).and_return(10)
         described_class.new.perform("GeosIndex", "city", ids, {})
         expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" }.not_to have_enqueued_background_job
       end
 
       it "calls Esse::AsyncIndexing::Actions::UpsertDocument.call and enqueues the lazy_document_attributes job" do
-        expect(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).with("GeosIndex", "city", ids, {}).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).with("GeosIndex", "city", ids, {}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", ids, {})
         expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job("GeosIndex", "city", "total_venues", ids, {}).on(:faktory)
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'eager_include_document_attributes' option is set to true" do
-        expect(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).with("GeosIndex", "city", ids, {"eager_include_document_attributes" => true}).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).with("GeosIndex", "city", ids, {"eager_include_document_attributes" => true}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", ids, "eager_include_document_attributes" => true)
         expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" }.not_to have_enqueued_background_job
       end
 
       it "does not enqueue the lazy_document_attributes job when the 'lazy_update_document_attributes' option is set to true" do
-        expect(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).with("GeosIndex", "city", ids, {"lazy_update_document_attributes" => true}).and_return(10)
+        expect(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).with("GeosIndex", "city", ids, {"lazy_update_document_attributes" => true}).and_return(10)
         desc_class.new.perform("GeosIndex", "city", ids, "lazy_update_document_attributes" => true)
         expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" }.not_to have_enqueued_background_job
       end
 
       it "enqueues the lazy_document_attributes job when the 'lazy_update_document_attributes' or 'eager_include_document_attributes' options are set to false" do
-        allow(Esse::AsyncIndexing::Actions::BatchImport).to receive(:call).and_return(10)
+        allow(Esse::AsyncIndexing::Actions::BulkImport).to receive(:call).and_return(10)
         desc_class.new.perform("GeosIndex", "city", ids, "lazy_update_document_attributes" => false)
         expect { "Esse::AsyncIndexing::Jobs::BulkUpdateLazyDocumentAttributeJob" }.to have_enqueued_background_job("GeosIndex", "city", "total_venues", ids, {}).on(:faktory)
 

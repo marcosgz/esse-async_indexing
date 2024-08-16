@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Esse::AsyncIndexing::Actions
-  class BatchDelete
+  class BulkDelete
     def self.call(index_class_name, repo_name, ids, options = {})
       docs = Esse::LazyDocumentHeader.coerce_each(ids)
       return if docs.empty?

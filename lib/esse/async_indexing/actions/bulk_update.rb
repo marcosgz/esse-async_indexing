@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module Esse::AsyncIndexing::Actions
-  class BatchUpdate
+  class BulkUpdate
     DOC_ARGS = %i[lazy_attributes context]
 
     def self.call(index_class_name, repo_name, ids, options = {})

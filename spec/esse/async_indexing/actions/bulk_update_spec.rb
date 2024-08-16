@@ -3,7 +3,7 @@
 require "spec_helper"
 require "shared_contexts/with_venues_index_definition"
 
-RSpec.describe Esse::AsyncIndexing::Actions::BatchUpdate do
+RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdate do
   include_context "with venues index definition"
 
   before do
