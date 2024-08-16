@@ -35,6 +35,8 @@ module Esse
           }
         }.freeze
 
+        # register_event 'elasticsearch.reindex'
+
         # This method is used to retrieve only the ids of the documents in the collection.
         # It's used to asynchronously index the documents.
         # The #each_batch_ids method is optional and should be implemented by the collection class.
@@ -45,12 +47,17 @@ module Esse
           if implement_batch_ids?
             if block_given?
               @collection_proc.new(*args, **kwargs).each_batch_ids do |batch|
-                yield(batch)
+                Esse::AsyncIndexing::Events.instrument("async_indexing.batch_ids") do |payload|
+                  payload[:ids] = batch
+                  yield(batch)
+                end
               end
             else
               Enumerator.new do |yielder|
                 @collection_proc.new(*args, **kwargs).each_batch_ids do |batch|
-                  yielder.yield(batch)
+                  Esse::AsyncIndexing::Events.instrument("async_indexing.batch_ids") do |payload|
+                    yielder.yield(batch)
+                  end
                 end
               end
             end

@@ -22,6 +22,7 @@ require_relative "async_indexing/version"
 require_relative "async_indexing/actions"
 require_relative "async_indexing/config"
 require_relative "async_indexing/errors"
+require_relative "async_indexing/events"
 require_relative "async_indexing/jobs"
 require_relative "plugins/async_indexing"
 
@@ -58,3 +59,4 @@ Esse::Config.__send__ :include, Esse::AsyncIndexing::Config
 if defined?(Esse::CLI)
   require_relative "async_indexing/cli"
 end
+
