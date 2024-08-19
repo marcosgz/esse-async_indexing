@@ -2,7 +2,7 @@
 
 source "https://rubygems.org"
 
-gem "esse"
+gem "esse", github: "marcosgz/esse", branch: "main"
 gem "esse-rspec"
 gem "esse-active_record", ">= 0.3.5", require: false
 gem "timecop"

@@ -1,3 +1,12 @@
+GIT
+  remote: https://github.com/marcosgz/esse.git
+  revision: 56e9a200a1d88c2163989854e8cf2fca952503a0
+  branch: main
+  specs:
+    esse (0.4.0.rc1)
+      multi_json
+      thor (>= 0.19)
+
 PATH
   remote: .
   specs:
@@ -42,9 +51,6 @@ GEM
       rexml
     diff-lcs (1.5.1)
     drb (2.2.1)
-    esse (0.3.4)
-      multi_json
-      thor (>= 0.19)
     esse-active_record (0.3.5)
       activerecord (>= 4.2, < 8)
       esse (>= 0.3.0)
@@ -154,7 +160,7 @@ PLATFORMS
 
 DEPENDENCIES
   background_job
-  esse
+  esse!
   esse-active_record (>= 0.3.5)
   esse-async_indexing!
   esse-rspec

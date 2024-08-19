@@ -20,15 +20,10 @@ Esse::CLI::Index.class_eval do
   def async_import(*index_classes)
     opts = Esse::HashUtils.deep_transform_keys(options.to_h, &:to_sym)
     opts[:service] ||= Esse.config.async_indexing.services.first
-    opts.delete(:preload_lazy_attributes) if options[:preload_lazy_attributes] == "false"
-    if (val = opts[:preload_lazy_attributes])
-      opts[:preload_lazy_attributes] = (val == "true") ? true : val.split(",")
-    end
-    if (val = opts.delete(:eager_load_lazy_attributes)) && val != "false"
-      opts[:eager_include_document_attributes] = (val == "true") ? true : val.split(",")
-    end
-    if (val = opts.delete(:update_lazy_attributes)) && val != "false"
-      opts[:lazy_update_document_attributes] = (val == "true") ? true : val.split(",")
+    %i[preload_lazy_attributes eager_load_lazy_attributes update_lazy_attributes].each do |key|
+      if (val = opts.delete(key)) && val != "false"
+        opts[key] = (val == "true") ? true : val.split(",")
+      end
     end
     require "esse/async_indexing/cli/async_import"
     Esse::AsyncIndexing::CLI::AsyncImport.new(indices: index_classes, **opts).run

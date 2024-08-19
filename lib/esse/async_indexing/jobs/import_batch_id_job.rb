@@ -33,8 +33,8 @@ class Esse::AsyncIndexing::Jobs::ImportBatchIdJob
   # The `import` action already eager or lazy load the document attributes when some of these options are set.
   def lazy_already_imported?(options)
     preload = options.delete("preload_lazy_attributes") || false
-    eager = options.delete("eager_include_document_attributes") || false
-    lazy = options.delete("lazy_update_document_attributes") || false
+    eager = options.delete("eager_load_lazy_attributes") || false
+    lazy = options.delete("update_lazy_attributes") || false
     preload || eager || lazy
   end
 end
