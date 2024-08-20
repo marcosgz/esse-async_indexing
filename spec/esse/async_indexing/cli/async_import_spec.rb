@@ -148,28 +148,34 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "eager_load_lazy_attributes" => %w[foo bar], "update_lazy_attributes" => ["baz"]).on(:faktory)
       end
 
-      it "allows -preload-lazy-attributes as true" do
+      it "allows --preload-lazy-attributes as true" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --preload-lazy-attributes=true])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "preload_lazy_attributes" => true).on(:faktory)
       end
 
-      it "allows -preload-lazy-attributes as false" do
+      it "allows --preload-lazy-attributes as false" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --preload-lazy-attributes=false])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], {}).on(:faktory)
       end
 
-      it "allows -preload-lazy-attributes as a single value" do
+      it "allows --preload-lazy-attributes as a single value" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --preload-lazy-attributes=foo])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "preload_lazy_attributes" => ["foo"]).on(:faktory)
       end
 
-      it "allows -preload-lazy-attributes as multiple comma separated values" do
+      it "allows --preload-lazy-attributes as multiple comma separated values" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --preload-lazy-attributes=foo,bar])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "preload_lazy_attributes" => %w[foo bar]).on(:faktory)
+      end
+
+      it "allows --job-options with a Hash" do
+        Esse.config.async_indexing.faktory
+        cli_exec(%w[index async_import CitiesIndex --job-options=queue:bar])
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], {}).on(:faktory).queue("bar")
       end
     end
 

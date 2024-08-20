@@ -17,6 +17,7 @@ Esse::CLI::Index.class_eval do
   option :eager_load_lazy_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to include to the bulk index request. Or pass `true` to include all lazy attributes"
   option :update_lazy_attributes, type: :string, default: nil, desc: "Comma separated list of lazy document attributes to bulk update after the bulk index request Or pass `true` to include all lazy attributes"
   option :enqueue_lazy_attributes, type: :boolean, default: nil, desc: "Enqueue the lazy document attributes job after the bulk import. (default: true))"
+  option :job_options, type: :hash, default: {}, desc: "List of options to pass to the background job. (Example: --job-options=queue:default)"
   def async_import(*index_classes)
     opts = Esse::HashUtils.deep_transform_keys(options.to_h, &:to_sym)
     opts[:service] ||= Esse.config.async_indexing.services.first

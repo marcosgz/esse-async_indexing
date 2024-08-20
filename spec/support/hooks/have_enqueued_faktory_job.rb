@@ -110,19 +110,41 @@ RSpec::Matchers.define :have_enqueued_background_job do |*expected_arguments|
     end
     @job = @job.with_args(*expected_arguments)
     @enqueued_jobs = BackgroundJob::Jobs.jobs
-    @enqueued_jobs.any? do |job|
+    filtered = @enqueued_jobs.select do |job|
       job.job_class == @job.job_class &&
         job.payload["args"] == @job.payload["args"]
     end
+    if @job_options
+      filtered = filtered.select do |job|
+        @job_options.all? do |key, value|
+          job.options[key.to_sym] == value
+        end
+      end
+    end
+
+    filtered.any?
   end
 
   chain :on do |service|
     @service = service
   end
 
+  chain :queue do |queue_name|
+    @job_options ||= {}
+    @job_options[:queue] = queue_name
+  end
+
+  chain :retry do |count|
+    @job_options ||= {}
+    @job_options[:retry] = count
+  end
+
   failure_message do |_block|
     if expected_arguments.any?
       msg = ["expected #{@job.job_class} to have an enqueued job with arguments #{BackgroundJobFormatter.args(expected_arguments)} but it did not."]
+      if @job_options
+        msg << "Matching options: #{@job_options.inspect}"
+      end
       if @enqueued_jobs.any?
         msg << BackgroundJobFormatter.jobs(@enqueued_jobs)
       end
@@ -135,6 +157,9 @@ RSpec::Matchers.define :have_enqueued_background_job do |*expected_arguments|
   failure_message_when_negated do |_block|
     if expected_arguments.any?
       msg = ["expected #{@job.job_class} not to have an enqueued job with arguments #{BackgroundJobFormatter.args(expected_arguments)} but it did."]
+      if @job_options
+        msg << "Matching options: #{@job_options.inspect}"
+      end
       if @enqueued_jobs.any?
         msg << BackgroundJobFormatter.jobs(@enqueued_jobs)
       end

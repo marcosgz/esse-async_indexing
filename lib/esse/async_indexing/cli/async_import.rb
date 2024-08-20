@@ -25,7 +25,7 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           ->(ids) { caller.call(service_name, repo, :import, ids, **bulk_options) }
         else
           ->(ids) do
-            BackgroundJob.job(service_name, WORKER_NAME)
+            BackgroundJob.job(service_name, WORKER_NAME, **job_options)
               .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
               .push
           end
@@ -40,10 +40,14 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
 
   def bulk_options
     @bulk_options ||= begin
-      hash = @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:repo, :service])
+      hash = @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:repo, :service, :job_options])
       hash.delete(:context) if hash[:context].nil? || hash[:context].empty?
       hash
     end
+  end
+
+  def job_options
+    @job_options ||= @options[:job_options] || {}
   end
 
   def validate_options!
