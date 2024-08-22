@@ -31,7 +31,6 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "esse", ">= 0.3.4"
   spec.add_dependency "multi_json", ">= 0.0.0"
-  spec.add_dependency "esse-redis_storage", ">= 0.1.0"
   spec.add_dependency "background_job", ">= 0.0.0"
   spec.add_development_dependency "pry"
   spec.add_development_dependency "rspec"

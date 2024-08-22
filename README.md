@@ -21,17 +21,13 @@ $ bundle install
 
 ```ruby
 Esse.configure do |config|
-  config.redis = ConnectionPool.new(size: 10, timeout: 5) do
-    Redis.new(url: ENV.fetch('REDIS_URL', 'redis://0.0.0.0:6379'))
-  end
-
   # Setup Sidekiq
   require 'sidekiq'
   config.async_indexing.sidekiq do |sidekiq|
-    sidekiq.namespace = "sidekiq"
     sidekiq.redis = ConnectionPool.new(size: 10, timeout: 5) do
       Redis.new(url: ENV.fetch('REDIS_URL', 'redis://0.0.0.0:6379'))
     end
+    # sidekiq.namespace = "sidekiq" # Sidekiq recommends using redis db number instead of namespace, but you can use it if you want
   end
 
   # Faktory

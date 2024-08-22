@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "esse"
-require "esse-redis_storage"
 require "forwardable"
 require "securerandom"
 require "time"
