@@ -10,6 +10,7 @@ RSpec.describe Esse::AsyncIndexing::ActiveRecordCallbacks::LazyUpdateAttribute d
   before do
     setup_esse_client!
     stub_esse_index(:geos) do
+      plugin :async_indexing
       repository :city do
         collection { |**, &block| block.call([{id: 1, name: "City 1"}]) }
         document { |hash, **| {_id: hash[:id], name: hash[:name]} }

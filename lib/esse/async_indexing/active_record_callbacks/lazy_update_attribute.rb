@@ -3,8 +3,6 @@
 module Esse::AsyncIndexing
   module ActiveRecordCallbacks
     class LazyUpdateAttribute < Callback
-      LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob"
-
       attr_reader :attribute_name
 
       def initialize(service_name:, attribute_name:, with: nil, **kwargs)
@@ -14,10 +12,14 @@ module Esse::AsyncIndexing
 
       def call(model)
         if (doc_ids = resolve_document_ids(model))
-          # @TODO Fixme
-          BackgroundJob.job(service_name, LAZY_ATTR_WORKER)
-            .with_args(repo.index.name, repo.repo_name, attribute_name.to_s, doc_ids, options)
-            .push
+          repo.async_indexing_job_for(:update_lazy_attribute).call(
+            service: service_name,
+            repo: repo,
+            operation: :update_lazy_attribute,
+            attribute: attribute_name,
+            ids: doc_ids,
+            **options
+          )
         end
 
         true
