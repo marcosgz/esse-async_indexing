@@ -4,14 +4,12 @@ module Esse
   module AsyncIndexing
     module Jobs
       DEFAULT = {
-        "esse/async_indexing/jobs/bulk_update_lazy_attribute_batch_id_job" => "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeBatchIdJob",
         "esse/async_indexing/jobs/bulk_update_lazy_attribute_job" => "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob",
         "esse/async_indexing/jobs/document_delete_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob",
         "esse/async_indexing/jobs/document_index_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob",
         "esse/async_indexing/jobs/document_update_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob",
         "esse/async_indexing/jobs/document_upsert_by_id_job" => "Esse::AsyncIndexing::Jobs::DocumentUpsertByIdJob",
         "esse/async_indexing/jobs/import_all_job" => "Esse::AsyncIndexing::Jobs::ImportAllJob",
-        "esse/async_indexing/jobs/import_batch_id_job" => "Esse::AsyncIndexing::Jobs::ImportBatchIdJob",
         "esse/async_indexing/jobs/import_ids_job" => "Esse::AsyncIndexing::Jobs::ImportIdsJob"
       }.freeze
 
