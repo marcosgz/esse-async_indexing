@@ -22,7 +22,9 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
         end
 
         enqueuer = if (caller = repo.async_indexing_jobs[:import])
-          ->(ids) { caller.call(service_name, repo, :import, ids, **bulk_options) }
+          ->(ids) do
+            caller.call(service: service_name, repo: repo, operation: :import, ids: ids, **bulk_options)
+          end
         else
           ->(ids) do
             BackgroundJob.job(service_name, WORKER_NAME, **job_options)

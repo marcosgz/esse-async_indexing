@@ -213,23 +213,34 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
           plugin :async_indexing
           repository :country do
             collection collection_class
-            async_indexing_job(:import) do |service, repo, op, ids, **options|
-              Thread.current[:custom_job] = [service, repo, op, ids, options]
+            async_indexing_job(:import) do |**options|
+              Thread.current[:custom_job] = options
             end
           end
         end
       end
 
       it "enqueues the custom job for the given index when passing --service=faktory" do
-        cli_exec(%w[index async_import GeosIndex --service=faktory])
+        cli_exec(%w[index async_import GeosIndex --service=faktory --eager-load-lazy-attributes=true])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.not_to have_enqueued_background_job
-        expect(Thread.current[:custom_job]).to eq([:faktory, GeosIndex::Country, :import, [1, 2, 3], {}])
+        expect(Thread.current[:custom_job]).to eq(
+          service: :faktory,
+          repo: GeosIndex::Country,
+          operation: :import,
+          ids: [1, 2, 3],
+          eager_load_lazy_attributes: true
+        )
       end
 
       it "enqueues the custom job for the given index when passing --service=sidekiq" do
         cli_exec(%w[index async_import GeosIndex --service=sidekiq])
         expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.not_to have_enqueued_background_job
-        expect(Thread.current[:custom_job]).to eq([:sidekiq, GeosIndex::Country, :import, [1, 2, 3], {}])
+        expect(Thread.current[:custom_job]).to eq(
+          service: :sidekiq,
+          repo: GeosIndex::Country,
+          operation: :import,
+          ids: [1, 2, 3]
+        )
       end
     end
   end
