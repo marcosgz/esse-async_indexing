@@ -59,7 +59,7 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
       it "raises an error if the repository does not have the async_indexing plugin" do
         expect {
           cli_exec(%w[index async_import CountiesIndex])
-        }.to raise_error(Esse::CLI::InvalidOption, /The CountiesIndex::County repository does not support async indexing/)
+        }.to raise_error(Esse::CLI::InvalidOption, /The CountiesIndex index does not support async indexing. Make sure you have/)
       end
     end
 
@@ -103,7 +103,7 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
       it "allows --update-lazy-attributes as a single value" do
         Esse.config.async_indexing.faktory
         cli_exec(%w[index async_import CitiesIndex --update-lazy-attributes=foo])
-        expect{ "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "update_lazy_attributes" => ["foo"]).on(:faktory)
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("CitiesIndex", "city", [1, 2, 3], "update_lazy_attributes" => ["foo"]).on(:faktory)
       end
 
       it "allows --update-lazy-attributes as multiple comma separated values" do
@@ -195,14 +195,14 @@ RSpec.describe "Esse::CLI::Index", type: :cli do
 
       it "enqueues the faktory job for the given index when passing --service=faktory" do
         cli_exec(%w[index async_import GeosIndex --service=faktory])
-        expect{ "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "country", [1, 2, 3], {}).on(:faktory)
-        expect{ "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "city", [1, 2, 3], {}).on(:faktory)
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "country", [1, 2, 3], {}).on(:faktory)
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "city", [1, 2, 3], {}).on(:faktory)
       end
 
       it "enqueues the faktory job for the given index when passing --service=sidekiq" do
         cli_exec(%w[index async_import GeosIndex --service=sidekiq])
-        expect{ "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "country", [1, 2, 3], {}).on(:sidekiq)
-        expect{ "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "city", [1, 2, 3], {}).on(:sidekiq)
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "country", [1, 2, 3], {}).on(:sidekiq)
+        expect { "Esse::AsyncIndexing::Jobs::ImportIdsJob" }.to have_enqueued_background_job("GeosIndex", "city", [1, 2, 3], {}).on(:sidekiq)
       end
     end
 

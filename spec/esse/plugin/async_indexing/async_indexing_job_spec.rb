@@ -10,7 +10,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job" do # rubocop:
         async_indexing_job { |service, repo, op, ids, **kwargs| }
       end
     end
-    expect(GeosIndex::State.async_indexing_jobs.keys).to match_array(%i[import index update delete])
+    expect(GeosIndex::State.async_indexing_jobs.keys).to match_array(%i[import index update delete update_lazy_attribute])
     expect(GeosIndex::State.async_indexing_jobs).to be_frozen
   end
 

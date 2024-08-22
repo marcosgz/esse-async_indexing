@@ -1,8 +1,6 @@
 # frozen_string_literal: true
 
 class Esse::AsyncIndexing::Jobs::ImportIdsJob
-  LAZY_ATTR_WORKER = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob"
-
   def perform(index_class_name, repo_name, ids, options = {})
     # This is specific to the AsyncIndexing plugin, can't pass to Esse import method
     enqueue_lazy = options.delete(:enqueue_lazy_attributes) if options.key?(:enqueue_lazy_attributes)
@@ -16,12 +14,18 @@ class Esse::AsyncIndexing::Jobs::ImportIdsJob
     return total if lazy_already_imported?(options)
     return total unless self.class.respond_to?(:background_job_service)
 
-    _index_class, repo_class = Esse::AsyncIndexing::Actions::CoerceIndexRepository.call(index_class_name, repo_name)
+    index_class, repo_class = Esse::AsyncIndexing::Actions::CoerceIndexRepository.call(index_class_name, repo_name)
+    return total unless Esse::AsyncIndexing.plugin_installed?(index_class)
 
     repo_class.lazy_document_attributes.each_key do |attr_name|
-      BackgroundJob.job(self.class.background_job_service, LAZY_ATTR_WORKER)
-        .with_args(index_class_name, repo_name, attr_name.to_s, ids, options)
-        .push
+      repo_class.async_indexing_job_for(:update_lazy_attribute).call(
+        **options,
+        service: self.class.background_job_service,
+        repo: repo_class,
+        operation: :update_lazy_attribute,
+        attribute: attr_name,
+        ids: ids
+      )
     end
     total
   end

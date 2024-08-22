@@ -88,4 +88,30 @@ RSpec.describe Esse::AsyncIndexing do
       expect { described_class.service_name(:invalid) }.to raise_error(ArgumentError, "Invalid service: :invalid, valid services are: sidekiq, faktory")
     end
   end
+
+  describe ".plugin_installed?" do
+    it "returns false when the given index is not a Esse::Index" do
+      expect(described_class.plugin_installed?(nil)).to be(false)
+      expect(described_class.plugin_installed?(Object)).to be(false)
+      expect(described_class.plugin_installed?(Esse::Repository)).to be(false)
+      expect(described_class.plugin_installed?(Esse::Index)).to be(false)
+    end
+
+    it "returns false when the given index does not have the :async_indexing plugin" do
+      stub_esse_index(:geos) do
+        repository :state, const: true
+      end
+      expect(described_class.plugin_installed?(GeosIndex)).to be(false)
+      expect(described_class.plugin_installed?(GeosIndex::State)).to be(false)
+    end
+
+    it "returns true when the given index have the :async_indexing plugin" do
+      stub_esse_index(:geos) do
+        plugin :async_indexing
+        repository :state, const: true
+      end
+      expect(described_class.plugin_installed?(GeosIndex)).to be(true)
+      expect(described_class.plugin_installed?(GeosIndex::State)).to be(true)
+    end
+  end
 end
