@@ -32,6 +32,13 @@ module Esse
                 .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
                 .push
             end
+          },
+          update_lazy_attribute: ->(service:, repo:, operation:, attribute:, ids:, **kwargs) {
+            unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
+              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob")
+                .with_args(repo.index.name, repo.repo_name, attribute.to_s, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
+                .push
+            end
           }
         }.freeze
 
@@ -93,7 +100,7 @@ module Esse
         end
 
         class AsyncIndexingJobValidator
-          OPERATIONS = %i[import index update delete].freeze
+          OPERATIONS = %i[import index update delete update_lazy_attribute].freeze
 
           def self.call(operations, block)
             unless block.is_a?(Proc)

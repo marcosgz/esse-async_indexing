@@ -2,15 +2,16 @@
 
 require "esse/cli/index/base_operation"
 
-class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
-  WORKER_NAME = "Esse::AsyncIndexing::Jobs::ImportIdsJob"
+class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::BaseOperation
+  WORKER_NAME = "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob"
 
-  attr_reader :job_options, :service_name
+  attr_reader :attributes, :job_options, :service_name
 
-  def initialize(indices:, job_options: {}, service: nil, **options)
-    @job_options = job_options
-    @service_name = (service || Esse.config.async_indexing.services.first)&.to_sym
+  def initialize(indices:, attributes: nil, job_options: nil, service: nil, **options)
     super(indices: indices, **options)
+    @attributes = Array(attributes)
+    @job_options = job_options || {}
+    @service_name = (service || Esse.config.async_indexing.services.first)&.to_sym
   end
 
   def run
@@ -35,15 +36,22 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           MSG
         end
 
-        enqueuer = if (caller = repo.async_indexing_jobs[:import])
+        attrs = repo_attributes(repo)
+        next unless attrs.any?
+
+        enqueuer = if (caller = repo.async_indexing_jobs[:update_lazy_attribute])
           ->(ids) do
-            caller.call(service: service_name, repo: repo, operation: :import, ids: ids, **bulk_options)
+            attrs.each do |attribute|
+              caller.call(service: service_name, repo: repo, operation: :update_lazy_attribute, attribute: attribute, ids: ids, **bulk_options)
+            end
           end
         else
           ->(ids) do
-            BackgroundJob.job(service_name, WORKER_NAME, **job_options)
-              .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
-              .push
+            attrs.each do |attribute|
+              BackgroundJob.job(service_name, WORKER_NAME, **job_options)
+                .with_args(repo.index.name, repo.repo_name, attribute.to_s, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
+                .push
+            end
           end
         end
 
@@ -64,5 +72,11 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
 
   def validate_options!
     validate_indices_option!
+  end
+
+  def repo_attributes(repo)
+    return repo.lazy_document_attributes.keys if attributes.empty?
+
+    repo.lazy_document_attribute_names(attributes)
   end
 end

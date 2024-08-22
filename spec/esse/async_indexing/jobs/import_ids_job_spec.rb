@@ -33,6 +33,7 @@ RSpec.describe Esse::AsyncIndexing::Jobs::ImportIdsJob do
     context "when the worker has lazy_document_attributes" do
       before do
         stub_esse_index(:geos) do
+          plugin :async_indexing
           repository :city do
             collection { |**, &block| block.call([{id: 1, name: "City 1"}]) }
             document { |hash, **| {_id: hash[:id], name: hash[:name]} }

@@ -50,6 +50,13 @@ module Esse::AsyncIndexing
 
     repo.respond_to?(:implement_batch_ids?) && repo.implement_batch_ids?
   end
+
+  def self.plugin_installed?(index)
+    index = index.index if index.is_a?(Class) && index < Esse::Repository
+    return false unless index.is_a?(Class) && index < Esse::Index
+
+    index.plugins.include?(Esse::Plugins::AsyncIndexing)
+  end
 end
 
 Esse::Config.__send__ :include, Esse::AsyncIndexing::Config

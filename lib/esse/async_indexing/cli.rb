@@ -29,4 +29,18 @@ Esse::CLI::Index.class_eval do
     require "esse/async_indexing/cli/async_import"
     Esse::AsyncIndexing::CLI::AsyncImport.new(indices: index_classes, **opts).run
   end
+
+  desc "async_update_lazy_attributes INDEX_CLASS", "Async update lazy attributes for the given index"
+  option :repo, type: :string, default: nil, alias: "-r", desc: "Repository to use for import"
+  option :suffix, type: :string, default: nil, aliases: "-s", desc: "Suffix to append to index name"
+  option :context, type: :hash, default: {}, required: true, desc: "List of options to pass to the index class"
+  option :service, type: :string, default: nil, alias: "-s", desc: "Service to use for async import: sidekiq, faktory"
+  option :job_options, type: :hash, default: {}, desc: "List of options to pass to the background job. (Example: --job-options=queue:default)"
+  def async_update_lazy_attributes(index_class, *attributes)
+    opts = Esse::HashUtils.deep_transform_keys(options.to_h, &:to_sym)
+    opts[:service] ||= Esse.config.async_indexing.services.first
+    require "esse/async_indexing/cli/async_update_lazy_attributes"
+
+    Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes.new(indices: [index_class], attributes: attributes, **opts).run
+  end
 end
