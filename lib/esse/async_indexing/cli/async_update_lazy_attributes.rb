@@ -39,10 +39,10 @@ class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::Ba
         attrs = repo_attributes(repo)
         next unless attrs.any?
 
-        enqueuer = if (caller = repo.async_indexing_jobs[:update_lazy_attribute])
+        enqueuer = if repo.async_indexing_job?(:update_lazy_attribute)
           ->(ids) do
             attrs.each do |attribute|
-              caller.call(service: service_name, repo: repo, operation: :update_lazy_attribute, attribute: attribute, ids: ids, **bulk_options)
+              repo.async_indexing_job_for(:update_lazy_attribute).call(service: service_name, repo: repo, operation: :update_lazy_attribute, attribute: attribute, ids: ids, **bulk_options)
             end
           end
         else

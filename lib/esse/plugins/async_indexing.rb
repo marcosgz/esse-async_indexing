@@ -4,44 +4,6 @@ module Esse
   module Plugins
     module AsyncIndexing
       module RepositoryClassMethods
-        DEFAULT_ASYNC_INDEXING_JOBS = {
-          import: ->(service:, repo:, operation:, ids:, **kwargs) {
-            unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::ImportIdsJob")
-                .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
-                .push
-            end
-          },
-          index: ->(service:, repo:, operation:, id:, **kwargs) {
-            if id
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob")
-                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
-                .push
-            end
-          },
-          update: ->(service:, repo:, operation:, id:, **kwargs) {
-            if id
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob")
-                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
-                .push
-            end
-          },
-          delete: ->(service:, repo:, operation:, id:, **kwargs) {
-            if id
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob")
-                .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
-                .push
-            end
-          },
-          update_lazy_attribute: ->(service:, repo:, operation:, attribute:, ids:, **kwargs) {
-            unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
-              BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob")
-                .with_args(repo.index.name, repo.repo_name, attribute.to_s, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
-                .push
-            end
-          }
-        }.freeze
-
         # This method is used to retrieve only the ids of the documents in the collection.
         # It's used to asynchronously index the documents.
         # The #each_batch_ids method is optional and should be implemented by the collection class.
@@ -83,35 +45,19 @@ module Esse
         #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
         # end
         def async_indexing_job(*operations, &block)
-          operations = AsyncIndexingJobValidator::OPERATIONS if operations.empty?
-          AsyncIndexingJobValidator.call(operations, block)
-          hash = operations.each_with_object({}) { |operation, h| h[operation] = block }
-          @async_indexing_jobs = async_indexing_jobs.dup.merge(hash)
-        ensure
-          @async_indexing_jobs.freeze
+          definer = @async_indexing_tasks || Esse::AsyncIndexing::Tasks.new
+          definer.define(*operations, &block)
+          @async_indexing_tasks = definer
         end
 
-        def async_indexing_jobs
-          @async_indexing_jobs || {}.freeze
+        def async_indexing_job?(operation)
+          return false unless @async_indexing_tasks
+
+          @async_indexing_tasks.user_defined?(operation)
         end
 
         def async_indexing_job_for(operation)
-          async_indexing_jobs[operation] || DEFAULT_ASYNC_INDEXING_JOBS[operation] || raise(ArgumentError, "The #{operation} operation is not implemented")
-        end
-
-        class AsyncIndexingJobValidator
-          OPERATIONS = %i[import index update delete update_lazy_attribute].freeze
-
-          def self.call(operations, block)
-            unless block.is_a?(Proc)
-              raise ArgumentError, "The block of async_indexing_job must be a callable object"
-            end
-
-            operations.each do |operation|
-              next if OPERATIONS.include?(operation)
-              raise ArgumentError, format("Unrecognized operation: %<operation>p. Valid operations are: %<valid>p", operation: operation, valid: OPERATIONS)
-            end
-          end
+          (@async_indexing_tasks || Esse.config.async_indexing.tasks).fetch(operation)
         end
       end
     end
