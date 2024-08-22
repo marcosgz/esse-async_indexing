@@ -3,7 +3,7 @@
 require "spec_helper"
 
 RSpec.describe Esse::AsyncIndexing::Configuration do
-  describe ".faktory" do
+  describe "#faktory" do
     it "returns the faktory config" do
       config = described_class.new
       expect(config.faktory).to be_a(BackgroundJob::Configuration::Faktory)
@@ -15,7 +15,7 @@ RSpec.describe Esse::AsyncIndexing::Configuration do
     end
   end
 
-  describe ".sidekiq" do
+  describe "#sidekiq" do
     it "returns the sidekiq config" do
       config = described_class.new
       expect(config.sidekiq).to be_a(BackgroundJob::Configuration::Sidekiq)
@@ -27,7 +27,7 @@ RSpec.describe Esse::AsyncIndexing::Configuration do
     end
   end
 
-  describe ".config_for" do
+  describe "#config_for" do
     it "returns the config for the given service" do
       config = described_class.new
       expect(config.config_for(:faktory)).to be_an_instance_of(BackgroundJob::Configuration::Faktory)
@@ -40,7 +40,22 @@ RSpec.describe Esse::AsyncIndexing::Configuration do
     end
   end
 
-  describe ".reset!" do
+  describe "#services" do
+    it "returns the services config" do
+      config = described_class.new
+      expect(config.services).to be_a(Esse::AsyncIndexing::ConfigService)
+    end
+  end
+
+  describe "#tasks" do
+    it "returns the tasks config" do
+      config = described_class.new
+      expect(config.tasks).to be_a(Esse::AsyncIndexing::Tasks)
+    end
+  end
+
+
+  describe "#reset!" do
     it "resets the config" do
       config = described_class.new
       config.faktory { |c| c.jobs["MyJob"] = {} }
@@ -48,6 +63,8 @@ RSpec.describe Esse::AsyncIndexing::Configuration do
       config.reset!
       expect(config.instance_variable_get(:@faktory)).to be_nil
       expect(config.instance_variable_get(:@sidekiq)).to be_nil
+      expect(config.instance_variable_get(:@services)).to be_nil
+      expect(config.instance_variable_get(:@tasks)).to be_nil
     end
   end
 end

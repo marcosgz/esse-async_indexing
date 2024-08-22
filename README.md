@@ -36,7 +36,9 @@ Esse.configure do |config|
 end
 ```
 
-Optional worker configuration:
+### Configuration > Jobs Queues
+
+Set the queues for each job and other options like retry, timeout, etc:
 
 ```ruby
 Esse.configure do |config|
@@ -61,6 +63,30 @@ Esse.configure do |config|
   }
 end
 ```
+
+### Configuration > Tasks
+
+To overwrite the default job that is enqueued for each operation. The default jobs are:
+* :import => Esse::AsyncIndexing::Jobs::ImportIdsJob
+* :index => Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob
+* :update => Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob
+* :delete => Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob
+* :update_lazy_attribute => Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob
+
+The operation can be set globally using the `task` method or per index using the `async_indexing_job` method.
+
+Example above will first store ids in different storage and just enqueue job with the batch_id:
+
+```ruby
+Esse.configure do |config|
+  config.async_indexing.task(:import) do |service:, repo:, operation:, ids:, **kwargs|
+    batch_id = Esse::RedisStorage::Queue.for(repo: repo).enqueue(values: ids)
+    ImportBatchIdJob.perform_later(repo.index.name, repo.repo_name, batch_id, **kwargs)
+  end
+end
+```
+
+Now when calling the async_import CLI command, it will push jobs to the `ImportBatchIdJob` instead of the standard `Esse::AsyncIndexing::Jobs::ImportIdsJob`.
 
 ## Index Configuration
 

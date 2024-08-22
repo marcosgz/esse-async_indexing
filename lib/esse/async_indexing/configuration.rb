@@ -19,6 +19,7 @@ module Esse
 
       def reset!
         @services = nil
+        @tasks = nil
         bg_job_config.reset!
       end
 
@@ -48,6 +49,22 @@ module Esse
           conf
         else raise ArgumentError, "Unknown service: #{service}"
         end
+      end
+
+      def tasks
+        @tasks ||= Esse::AsyncIndexing::Tasks.new
+      end
+
+      # DSL to define custom job enqueueing
+      #
+      # task(:import) do |service:, repo:, operation:, ids:, **kwargs|
+      #   MyCustomJob.perform_later(repo.index.name, ids, **kwargs)
+      # end
+      # task(:index, :update, :delete) do |service:, repo:, operation:, id, **kwargs|
+      #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
+      # end
+      def task(*operations, &block)
+        tasks.define(*operations, &block)
       end
 
       private

@@ -45,35 +45,19 @@ module Esse
         #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
         # end
         def async_indexing_job(*operations, &block)
-          operations = AsyncIndexingJobValidator::OPERATIONS if operations.empty?
-          AsyncIndexingJobValidator.call(operations, block)
-          hash = operations.each_with_object({}) { |operation, h| h[operation] = block }
-          @async_indexing_jobs = async_indexing_jobs.dup.merge(hash)
-        ensure
-          @async_indexing_jobs.freeze
+          definer = @async_indexing_tasks || Esse::AsyncIndexing::Tasks.new
+          definer.define(*operations, &block)
+          @async_indexing_tasks = definer
         end
 
-        def async_indexing_jobs
-          @async_indexing_jobs || {}.freeze
+        def async_indexing_job?(operation)
+          return false unless @async_indexing_tasks
+
+          @async_indexing_tasks.user_defined?(operation)
         end
 
         def async_indexing_job_for(operation)
-          async_indexing_jobs[operation] || Esse::AsyncIndexing::Tasks::DEFAULT[operation] || raise(ArgumentError, "The #{operation} operation is not implemented")
-        end
-
-        class AsyncIndexingJobValidator
-          OPERATIONS = %i[import index update delete update_lazy_attribute].freeze
-
-          def self.call(operations, block)
-            unless block.is_a?(Proc)
-              raise ArgumentError, "The block of async_indexing_job must be a callable object"
-            end
-
-            operations.each do |operation|
-              next if OPERATIONS.include?(operation)
-              raise ArgumentError, format("Unrecognized operation: %<operation>p. Valid operations are: %<valid>p", operation: operation, valid: OPERATIONS)
-            end
-          end
+          (@async_indexing_tasks || Esse.config.async_indexing.tasks).fetch(operation)
         end
       end
     end

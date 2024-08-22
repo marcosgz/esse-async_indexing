@@ -41,6 +41,42 @@ module Esse
         }
       }.freeze
 
+      def initialize
+        @tasks = {}.freeze
+      end
+
+      def user_defined?(name)
+        @tasks.key?(name.to_sym)
+      end
+
+      def define(*names, &block)
+        names = DEFAULT.keys if names.empty?
+        validate!(names, block)
+        new_tasks = names.each_with_object({}) { |name, h| h[name.to_sym] = block }
+        @tasks = @tasks.dup.merge(new_tasks)
+      ensure
+        @tasks.freeze
+      end
+
+      def fetch(name)
+        id = name.to_sym
+        @tasks[id] || DEFAULT[id] || raise(ArgumentError, "Unknown task: #{name}")
+      end
+      alias_method :[], :fetch
+
+      private
+
+      def validate!(names, block)
+        unless block.is_a?(Proc)
+          raise ArgumentError, "The block of task must be a callable object"
+        end
+
+        names.each do |name|
+          unless DEFAULT.key?(name)
+            raise ArgumentError, "Unrecognized task: #{name}. Valid tasks are: #{DEFAULT.keys}"
+          end
+        end
+      end
     end
   end
 end

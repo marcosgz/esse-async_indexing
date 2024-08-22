@@ -194,7 +194,7 @@ RSpec.describe Esse::Plugins::AsyncIndexing, "#async_indexing_job_for" do # rubo
 
       expect {
         GeosIndex::State.async_indexing_job_for(:unknown)
-      }.to raise_error(ArgumentError, /unknown operation/)
+      }.to raise_error(ArgumentError, /Unknown task: unknown/)
     end
   end
 end
