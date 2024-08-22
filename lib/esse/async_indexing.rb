@@ -20,6 +20,7 @@ end
 require_relative "async_indexing/version"
 require_relative "async_indexing/actions"
 require_relative "async_indexing/config"
+require_relative "async_indexing/tasks"
 require_relative "async_indexing/errors"
 require_relative "async_indexing/jobs"
 require_relative "plugins/async_indexing"
