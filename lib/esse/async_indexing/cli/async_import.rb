@@ -35,19 +35,18 @@ class Esse::AsyncIndexing::CLI::AsyncImport < Esse::CLI::Index::BaseOperation
           MSG
         end
 
-        enqueuer = if repo.async_indexing_job?(:import)
-          ->(ids) do
-            repo.async_indexing_job_for(:import).call(service: service_name, repo: repo, operation: :import, ids: ids, **bulk_options)
+        repo.batch_ids(**bulk_options.fetch(:context, {})).each do |ids|
+          kwargs = {
+            service: service_name,
+            repo: repo,
+            operation: :import,
+            ids: ids,
+            **bulk_options
+          }.tap do |hash|
+            hash[:job_options] = job_options if job_options.any?
           end
-        else
-          ->(ids) do
-            BackgroundJob.job(service_name, WORKER_NAME, **job_options)
-              .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
-              .push
-          end
+          repo.async_indexing_job_for(:import).call(**kwargs)
         end
-
-        repo.batch_ids(**bulk_options.fetch(:context, {})).each(&enqueuer)
       end
     end
   end

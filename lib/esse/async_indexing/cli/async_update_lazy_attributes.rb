@@ -39,23 +39,20 @@ class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::Ba
         attrs = repo_attributes(repo)
         next unless attrs.any?
 
-        enqueuer = if repo.async_indexing_job?(:update_lazy_attribute)
-          ->(ids) do
-            attrs.each do |attribute|
-              repo.async_indexing_job_for(:update_lazy_attribute).call(service: service_name, repo: repo, operation: :update_lazy_attribute, attribute: attribute, ids: ids, **bulk_options)
-            end
+        repo.batch_ids(**bulk_options.fetch(:context, {})).each do |ids|
+          kwargs = {
+            service: service_name,
+            repo: repo,
+            operation: :update_lazy_attribute,
+            ids: ids,
+            **bulk_options
+          }.tap do |hash|
+            hash[:job_options] = job_options if job_options.any?
           end
-        else
-          ->(ids) do
-            attrs.each do |attribute|
-              BackgroundJob.job(service_name, WORKER_NAME, **job_options)
-                .with_args(repo.index.name, repo.repo_name, attribute.to_s, ids, Esse::HashUtils.deep_transform_keys(bulk_options, &:to_s))
-                .push
-            end
+          attrs.each do |attribute|
+            repo.async_indexing_job_for(:update_lazy_attribute).call(**kwargs, attribute: attribute)
           end
         end
-
-        repo.batch_ids(**bulk_options.fetch(:context, {})).each(&enqueuer)
       end
     end
   end

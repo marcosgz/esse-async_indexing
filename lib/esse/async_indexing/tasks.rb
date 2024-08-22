@@ -4,37 +4,37 @@ module Esse
   module AsyncIndexing
     class Tasks
       DEFAULT = {
-        import: ->(service:, repo:, operation:, ids:, **kwargs) {
+        import: ->(service:, repo:, operation:, ids:, job_options: {}, **kwargs) {
           unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
-            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::ImportIdsJob")
+            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::ImportIdsJob", **job_options)
               .with_args(repo.index.name, repo.repo_name, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
               .push
           end
         },
-        index: ->(service:, repo:, operation:, id:, **kwargs) {
+        index: ->(service:, repo:, operation:, id:, job_options: {}, **kwargs) {
           if id
-            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob")
+            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentIndexByIdJob", **job_options)
               .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
               .push
           end
         },
-        update: ->(service:, repo:, operation:, id:, **kwargs) {
+        update: ->(service:, repo:, operation:, id:, job_options: {}, **kwargs) {
           if id
-            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob")
+            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentUpdateByIdJob", **job_options)
               .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
               .push
           end
         },
-        delete: ->(service:, repo:, operation:, id:, **kwargs) {
+        delete: ->(service:, repo:, operation:, id:, job_options: {}, **kwargs) {
           if id
-            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob")
+            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::DocumentDeleteByIdJob", **job_options)
               .with_args(repo.index.name, repo.repo_name, id, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
               .push
           end
         },
-        update_lazy_attribute: ->(service:, repo:, operation:, attribute:, ids:, **kwargs) {
+        update_lazy_attribute: ->(service:, repo:, operation:, attribute:, ids:, job_options: {}, **kwargs) {
           unless (ids = Esse::ArrayUtils.wrap(ids)).empty?
-            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob")
+            BackgroundJob.job(service, "Esse::AsyncIndexing::Jobs::BulkUpdateLazyAttributeJob", **job_options)
               .with_args(repo.index.name, repo.repo_name, attribute.to_s, ids, Esse::HashUtils.deep_transform_keys(kwargs, &:to_s))
               .push
           end
