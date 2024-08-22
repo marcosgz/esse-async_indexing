@@ -39,7 +39,7 @@ class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::Ba
         attrs = repo_attributes(repo)
         next unless attrs.any?
 
-        repo.batch_ids(**bulk_options.fetch(:context, {})).each do |ids|
+        repo.batch_ids(**@options.fetch(:context, {})).each do |ids|
           kwargs = {
             service: service_name,
             repo: repo,
@@ -61,8 +61,7 @@ class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::Ba
 
   def bulk_options
     @bulk_options ||= begin
-      hash = @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:repo])
-      hash.delete(:context) if hash[:context].nil? || hash[:context].empty?
+      hash = @options.slice(*@options.keys - Esse::CLI_IGNORE_OPTS - [:context, :repo])
       hash
     end
   end
