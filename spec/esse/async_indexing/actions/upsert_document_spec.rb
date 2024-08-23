@@ -42,7 +42,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::UpsertDocument do
           refresh: true
         ).and_return("result" => "created", "_id" => hotel[:id])
 
-        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "index", lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
+        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "index", eager_load_lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
       end
     end
 
@@ -67,7 +67,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::UpsertDocument do
           refresh: true
         ).and_return("result" => "deleted")
 
-        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "delete", lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:deleted)
+        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "delete", eager_load_lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:deleted)
       end
     end
 
@@ -102,7 +102,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::UpsertDocument do
           refresh: true
         ).and_return("result" => "updated", "_id" => hotel[:id])
 
-        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "update", lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
+        expect(described_class.call("VenuesIndex", "venue", hotel[:id], "update", eager_load_lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
       end
     end
 

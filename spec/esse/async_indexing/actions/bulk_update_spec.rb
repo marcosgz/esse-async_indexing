@@ -55,7 +55,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdate do
             {update: {_id: 1, data: {doc: {name: "City 1"}}}}
           ]
         ).and_return("items" => [{}])
-        expect(described_class.call("GeosIndex", "city", [1], lazy_attributes: false)).to eq(1)
+        expect(described_class.call("GeosIndex", "city", [1], eager_load_lazy_attributes: false)).to eq(1)
       end
 
       it "updates all documents with eager loading lazy attributes" do
@@ -65,7 +65,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdate do
             {update: {_id: 1, data: {doc: {name: "City 1", total_venues: 10}}}}
           ]
         ).and_return("items" => [{}])
-        expect(described_class.call("GeosIndex", "city", [1], lazy_attributes: true)).to eq(1)
+        expect(described_class.call("GeosIndex", "city", [1], eager_load_lazy_attributes: true)).to eq(1)
       end
     end
   end

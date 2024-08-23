@@ -31,7 +31,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::DeleteDocument do
         refresh: true
       ).and_return("result" => "deleted")
 
-      expect(described_class.call("VenuesIndex", "venue", hotel[:id], lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:deleted)
+      expect(described_class.call("VenuesIndex", "venue", hotel[:id], eager_load_lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:deleted)
     end
   end
 end

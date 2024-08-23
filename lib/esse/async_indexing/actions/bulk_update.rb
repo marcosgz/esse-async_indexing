@@ -2,7 +2,6 @@
 
 module Esse::AsyncIndexing::Actions
   class BulkUpdate
-    DOC_ARGS = %i[lazy_attributes context]
 
     def self.call(index_class_name, repo_name, ids, options = {})
       ids = Array(ids)
@@ -14,8 +13,11 @@ module Esse::AsyncIndexing::Actions
       if (context = bulk_opts.delete(:context))
         find_opts.merge!(context)
       end
-      if (lazy_attributes = bulk_opts.delete(:lazy_attributes))
-        find_opts[:lazy_attributes] = lazy_attributes
+      if (val = bulk_opts.delete(:eager_load_lazy_attributes))
+        find_opts[:eager_load_lazy_attributes] = val
+      end
+      if (val = bulk_opts.delete(:preload_lazy_attributes))
+        find_opts[:preload_lazy_attributes] = val
       end
       find_opts[:id] = ids
 

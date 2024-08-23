@@ -2,8 +2,7 @@
 
 module Esse::AsyncIndexing::Actions
   class UpsertDocument
-    DOC_ARGS = %i[lazy_attributes]
-    # OPERATIONS = %w[index update delete]
+    DOC_ARGS = %i[eager_load_lazy_attributes preload_lazy_attributes]
 
     def self.call(index_class_name, repo_name, document_id, operation = "index", options = {})
       case operation

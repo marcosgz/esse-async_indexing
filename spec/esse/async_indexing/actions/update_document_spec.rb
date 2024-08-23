@@ -31,7 +31,7 @@ RSpec.describe Esse::AsyncIndexing::Actions::UpdateDocument do
         refresh: true
       ).and_return("result" => "updated", "_id" => hotel[:id])
 
-      expect(described_class.call("VenuesIndex", "venue", hotel[:id], lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
+      expect(described_class.call("VenuesIndex", "venue", hotel[:id], eager_load_lazy_attributes: false, refresh: true, suffix: "2024")).to eq(:indexed)
     end
 
     it "does not send a update request if the document is not found" do
