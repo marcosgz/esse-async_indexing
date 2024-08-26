@@ -12,7 +12,7 @@ PATH
   specs:
     esse-async_indexing (0.1.0.rc1)
       background_job
-      esse (>= 0.3.4)
+      esse (>= 0.4.0.rc01)
       multi_json
 
 GEM

@@ -29,7 +29,7 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "esse", ">= 0.3.4"
+  spec.add_dependency "esse", ">= 0.4.0.rc1"
   spec.add_dependency "multi_json", ">= 0.0.0"
   spec.add_dependency "background_job", ">= 0.0.0"
   spec.add_development_dependency "pry"
