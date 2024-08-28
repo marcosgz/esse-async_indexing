@@ -41,5 +41,10 @@ RSpec.describe Esse::AsyncIndexing::Actions::BulkUpdateLazyAttribute do
 
       expect(described_class.call("GeosIndex", "city", "total_neighborhoods", city_ids, suffix: "2024", refresh: true)).to eq(["1"])
     end
+
+    it "logs a warning when the lazy attribute is not found" do
+      expect(Esse.logger).to receive(:warn).with("Lazy attribute :unknown not found in `city` repository of `GeosIndex` index.")
+      expect(described_class.call("GeosIndex", "city", :unknown, city_ids)).to be_nil
+    end
   end
 end

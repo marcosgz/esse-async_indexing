@@ -71,7 +71,7 @@ class Esse::AsyncIndexing::CLI::AsyncUpdateLazyAttributes < Esse::CLI::Index::Ba
   end
 
   def repo_attributes(repo)
-    return repo.lazy_document_attributes.keys if attributes.empty?
+    return repo.lazy_document_attribute_names(true) if attributes.empty?
 
     repo.lazy_document_attribute_names(attributes)
   end
