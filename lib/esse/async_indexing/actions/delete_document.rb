@@ -11,6 +11,8 @@ module Esse::AsyncIndexing::Actions
 
       index_class.delete(id: document_id, **bulk_opts)
       :deleted
+    rescue Esse::Transport::NotFoundError
+      :not_found
     end
   end
 end
