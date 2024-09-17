@@ -64,6 +64,12 @@ module Esse
       end
       alias_method :[], :fetch
 
+      def dup
+        new_task = self.class.new
+        new_task.instance_variable_set(:@tasks, @tasks.dup)
+        new_task
+      end
+
       private
 
       def validate!(names, block)

@@ -45,7 +45,7 @@ module Esse
         #   MyCustomJob.perform_later(repo.index.name, [id], **kwargs)
         # end
         def async_indexing_job(*operations, &block)
-          definer = @async_indexing_tasks || Esse::AsyncIndexing::Tasks.new
+          definer = @async_indexing_tasks || Esse.config.async_indexing.tasks.dup
           definer.define(*operations, &block)
           @async_indexing_tasks = definer
         end

@@ -85,4 +85,13 @@ RSpec.describe Esse::AsyncIndexing::Tasks do
     it_behaves_like "a task fetch for", :delete
     it_behaves_like "a task fetch for", :update_lazy_attribute
   end
+
+  describe "#dup" do
+    it "duplicates the tasks" do
+      import_task = ->(**) {}
+      tasks.define(:import, &import_task)
+      new_tasks = tasks.dup
+      expect(new_tasks[:import]).to eq(import_task)
+    end
+  end
 end

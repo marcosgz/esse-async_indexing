@@ -2,6 +2,6 @@
 
 module Esse
   module AsyncIndexing
-    VERSION = "0.1.0.rc3"
+    VERSION = "0.1.0.rc4"
   end
 end
