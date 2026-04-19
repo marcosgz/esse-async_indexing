@@ -2,6 +2,9 @@
 
 This gem provides a way to [Esse](https://github.com/marcosgz/esse) index documents asynchronously using [Faktory](https://github.com/contribsys/faktory_worker_ruby) or [Sidekiq](https://github.com/sidekiq/sidekiq).
 
+## Documentation
+
+Full guides, job configuration, and API reference are published at **[gems.marcosz.com.br/esse-async_indexing](https://gems.marcosz.com.br/esse-async_indexing/)** — part of the [marcosgz Ruby gem catalogue](https://gems.marcosz.com.br).
 
 ## Installation
 
